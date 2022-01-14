@@ -1,0 +1,25 @@
+[package]
+name = "wigner"
+version = "0.5.0"
+edition = "2018"
+authors = ["Guillaume Fraux <guillaume.fraux@epfl.ch>"]
+repository = "https://github.com/luthaf/wigner"
+license = "MIT/Apache-2.0"
+keywords = ["clebsch", "gordan", "wigner"]
+categories = ["science"]
+readme = "README.md"
+description = "Compute Wigner 3j and Clebsch-Gordan coefficients in pure Rust"
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+bench = false
+
+[dependencies]
+lazy_static = "1"
+smallvec = "1"
+
+[dev-dependencies]
+approx = "0.5"
+
+[workspace]
+members = ["benchmarks"]

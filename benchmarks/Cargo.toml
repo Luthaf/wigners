@@ -1,0 +1,25 @@
+[package]
+name = "wigner-benchmarks"
+version = "0.0.0"
+edition = "2018"
+publish = false
+
+[build-dependencies]
+cmake = "0.1"
+
+[dev-dependencies]
+criterion = "0.3"
+wigner = {path = ".."}
+wigner-symbols = "0.5"
+
+[[bench]]
+name = "wigner"
+harness = false
+
+[[bench]]
+name = "wigner-symbols"
+harness = false
+
+[[bench]]
+name = "wigxjpf"
+harness = false
