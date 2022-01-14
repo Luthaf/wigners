@@ -1,9 +1,9 @@
 [package]
-name = "wigner"
-version = "0.5.0"
+name = "wigners"
+version = "0.1.0"
 edition = "2018"
 authors = ["Guillaume Fraux <guillaume.fraux@epfl.ch>"]
-repository = "https://github.com/luthaf/wigner"
+repository = "https://github.com/luthaf/wigners"
 license = "MIT/Apache-2.0"
 keywords = ["clebsch", "gordan", "wigner"]
 categories = ["science"]

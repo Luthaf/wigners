@@ -1,12 +1,12 @@
 #![allow(clippy::needless_return)]
 
-use wigner::wigner_3j;
+use wigners::wigner_3j;
 
 use criterion::{Criterion, criterion_group, criterion_main};
 
 fn bench_wigner3j(c: &mut Criterion) {
     for &max_angular in &[4, 8, 12, 20] {
-        c.bench_function(&format!("wigner max_angular={}", max_angular), |b| {
+        c.bench_function(&format!("wigners max_angular={}", max_angular), |b| {
             b.iter(|| {
                 for l1 in 0..=max_angular {
                     for l2 in 0..=max_angular {

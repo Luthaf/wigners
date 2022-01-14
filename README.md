@@ -18,15 +18,15 @@ crate is available under the same license as the Julia package.
 Add this crate to your `Cargo.toml` dependencies section:
 
 ```toml
-wigner = "0.1.0"
+wigners = "0.1.0"
 ```
 
 And then call one of the exported function:
 
 ```rust
-let w3j = wigner::wigner_3j(j1, j2, j3, m1, m2, m3);
+let w3j = wigners::wigner_3j(j1, j2, j3, m1, m2, m3);
 
-let cg = wigner::clebsch_gordan(j1, m1, j2, m1, j3, m3);
+let cg = wigners::clebsch_gordan(j1, m1, j2, m1, j3, m3);
 ```
 
 ## Limitations
@@ -43,18 +43,18 @@ these!
 This benchmark measure the time to compute all possible Wigner 3j symbols up to
 a fixed maximal angular momentum.
 
-| angular momentum | wigner (this crate) | wigner-symbols v0.5 | WignerSymbols.jl v2.0 | wigxjpf v1.11 |
-|------------------|---------------------|---------------------|-----------------------|---------------|
-| 4                | 0.925 ms            | 17.5 ms             | 2.31 ms               | 0.348 ms      |
-| 8                | 5.18 ms             | 151 ms              | 12.0 ms               | 2.40 ms       |
-| 12               | 14.0 ms             | 595 ms              | 23.0 ms               | 8.21 ms       |
-| 20               | 55.0 ms             | 3772 ms             | 88.3 ms               | 43.0 ms       |
+| angular momentum | wigners (this crate) | wigner-symbols v0.5 | WignerSymbols.jl v2.0 | wigxjpf v1.11 |
+|------------------|----------------------|---------------------|-----------------------|---------------|
+| 4                | 0.925 ms             | 17.5 ms             | 2.31 ms               | 0.348 ms      |
+| 8                | 5.18 ms              | 151 ms              | 12.0 ms               | 2.40 ms       |
+| 12               | 14.0 ms              | 595 ms              | 23.0 ms               | 8.21 ms       |
+| 20               | 55.0 ms              | 3772 ms             | 88.3 ms               | 43.0 ms       |
 
-## Comparison to `wigner_symbols`
+## Comparison to `wigner-symbols`
 
 There is another Rust implementation of wigner symbols: the
-[wigner_symbols](https://github.com/Rufflewind/wigner-symbols-rs) crate.
-`wigner_symbols` also implements 6j and 9j symbols, but it was not usable for my
+[wigner-symbols](https://github.com/Rufflewind/wigner-symbols-rs) crate.
+`wigner-symbols` also implements 6j and 9j symbols, but it was not usable for my
 case since it relies on [rug](https://crates.io/crates/rug) for arbitrary
 precision integers and through it on the [GMP](https://gmplib.org/) library. The
 GMP library might be problematic for you for one of these reason:

@@ -9,7 +9,7 @@ cmake = "0.1"
 
 [dev-dependencies]
 criterion = "0.3"
-wigner = {path = ".."}
+wigners = {path = ".."}
 wigner-symbols = "0.5"
 
 [[bench]]
