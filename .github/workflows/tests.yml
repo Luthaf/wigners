@@ -1,0 +1,43 @@
+name: Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    # Check all PR
+
+jobs:
+  tests:
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} / rust ${{ matrix.rust-version }} ${{ matrix.build-type }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-18.04
+            rust-version: stable
+            rust-target: x86_64-unknown-linux-gnu
+            build-type: debug
+          - os: ubuntu-18.04
+            rust-version: stable
+            rust-target: x86_64-unknown-linux-gnu
+            build-type: release
+          - os: ubuntu-18.04
+            rust-version: 1.53
+            rust-target: x86_64-unknown-linux-gnu
+            build-type: debug
+    steps:
+      - uses: actions/checkout@v2
+      - name: setup rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust-version }}
+          default: true
+          target: ${{ matrix.rust-target }}
+      - name: run tests
+        run: cargo test --target ${{ matrix.rust-target }} ${{ matrix.cargo-build-flags }}
+      - name: check that benchmarks compile and run once
+        if: matrix.build-type == 'release'
+        run: |
+          cd benchmarks
+          cargo bench -- --test
