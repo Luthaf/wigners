@@ -70,9 +70,8 @@ pub extern fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) ->
 /// Compute the Clebsch-Gordan coefficient <j1 m1 ; j2 m2 | j3 m3> using their
 /// relation to Wigner 3j coefficients:
 ///
-/// ```
-/// <j1 m1 ; j2 m2 | j3 m3> = (−1)^(j1 - j2 + m3) sqrt(2*j3 + 1) wigner_3j(j1, j2, j3, m1, m2, -m3)
-///
+/// ```text
+/// <j1 m1 ; j2 m2 | j3 m3> = (-1)^(j1 - j2 + m3) sqrt(2*j3 + 1) wigner_3j(j1, j2, j3, m1, m2, -m3)
 /// ```
 #[no_mangle]
 pub extern fn clebsch_gordan(j1: u32, m1: i32, j2: u32, m2: i32, j3: u32, m3: i32) -> f64 {
