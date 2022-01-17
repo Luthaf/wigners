@@ -77,7 +77,7 @@ pub extern fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) ->
 pub extern fn clebsch_gordan(j1: u32, m1: i32, j2: u32, m2: i32, j3: u32, m3: i32) -> f64 {
     let mut w3j = wigner_3j(j1, j2, j3, m1, m2, -m3);
 
-    w3j *= (2 * j3 + 1) as f64;
+    w3j *= f64::sqrt((2 * j3 + 1) as f64);
     if (j1 as i32 - j2 as i32 + m3) % 2 != 0 {
         return -w3j;
     } else {
@@ -211,5 +211,13 @@ mod tests {
         assert_ulps_eq!(wigner_3j(100, 100, 100, 100, -100, 0), 2.689688852311291e-13);
 
         assert_ulps_eq!(wigner_3j(0, 1, 1, 0, 0, 0), -0.5773502691896257);
+    }
+
+    #[test]
+    fn test_clebsch_gordan() {
+        // checked against sympy
+        assert_ulps_eq!(clebsch_gordan(2, 0, 6, 0, 4, 1), 0.0);
+        assert_ulps_eq!(clebsch_gordan(1, 1, 1, 1, 2, 2), 1.0);
+        assert_ulps_eq!(clebsch_gordan(2, 2, 1, -1, 3, 1), f64::sqrt(1.0 / 15.0));
     }
 }

@@ -1,2 +1,9 @@
 /target
 Cargo.lock
+
+.tox/
+build/
+dist/
+
+*.egg-info
+MANIFEST
