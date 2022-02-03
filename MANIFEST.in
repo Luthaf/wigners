@@ -1,4 +1,9 @@
 recursive-include src *
-recursive-include benchmarks *
 include Cargo.*
 include pyproject.toml
+
+recursive-exclude .github *
+recursive-exclude benchmarks *
+
+recursive-exclude python/tests *
+recursive-exclude python/wigners.egg-info *

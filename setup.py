@@ -1,16 +1,25 @@
 import os
 import sys
-import shutil
 import subprocess
 
 from setuptools import setup, Extension
+from setuptools.command.build_ext import build_ext
 from wheel.bdist_wheel import bdist_wheel
-from distutils.command.build_ext import build_ext  # type: ignore
 
 ROOT = os.path.realpath(os.path.dirname(__file__))
 
 if sys.version_info < (3, 6):
     sys.exit("Sorry, Python < 3.6 is not supported")
+
+if "--rust-target" in sys.argv:
+    index = sys.argv.index("--rust-target")
+    RUST_TARGET = sys.argv[index + 1]
+
+    # remove rust target from CLI args
+    sys.argv.pop(index)
+    sys.argv.pop(index)
+else:
+    RUST_TARGET = None
 
 
 class universal_wheel(bdist_wheel):
@@ -32,18 +41,27 @@ class cargo_ext(build_ext):
     """
 
     def run(self):
-        subprocess.run(
-            ["cargo", "build", "--release"],
-            cwd=ROOT,
-            check=True,
-        )
+        cargo_build = ["cargo", "build", "--release"]
+        target_dir = os.path.join(ROOT, "target")
 
+        if RUST_TARGET is not None:
+            cargo_build += ["--target", RUST_TARGET]
+            target_dir = os.path.join(target_dir, RUST_TARGET)
+
+        subprocess.run(cargo_build, cwd=ROOT, check=True)
+
+        file_found = False
         for filename in ["libwigners.so", "libwigners.dylib", "wigners.dll"]:
-            lib_path = os.path.join(ROOT, "target", "release", filename)
+            lib_path = os.path.join(target_dir, "release", filename)
             if os.path.exists(lib_path):
-                shutil.copy(
+                file_found = True
+                print(f"found native library at {lib_path}")
+                self.copy_file(
                     lib_path, os.path.join(self.build_lib, "wigners", "_wigners.so")
                 )
+
+        if not file_found:
+            raise Exception("failed to build native code")
 
 
 # read version from Cargo.toml
@@ -56,16 +74,16 @@ with open("Cargo.toml") as fd:
             # take the first version in the file, this should be the right one
             break
 
-setup(
-    version=version,
-    ext_modules=[
-        # only declare the extension, it is built & copied as required in the
-        # build_ext command
-        Extension(name="wigners", sources=[]),
-    ],
-    cmdclass={
-        "build_ext": cargo_ext,
-        "bdist_wheel": universal_wheel,
-    },
-    package_data={"wigners": ["wigners.so"]},
-)
+if __name__ == "__main__":
+    setup(
+        version=version,
+        ext_modules=[
+            # only declare the extension, it is built & copied as required in the
+            # build_ext command
+            Extension(name="wigners", sources=[]),
+        ],
+        cmdclass={
+            "build_ext": cargo_ext,
+            "bdist_wheel": universal_wheel,
+        },
+    )
