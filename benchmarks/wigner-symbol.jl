@@ -4,7 +4,7 @@ using WignerSymbols
 function compute_all(max_angular)
     for l1 = 0:max_angular
         for l2 = 0:max_angular
-            for l3 = 0:3
+            for l3 = 0:max_angular
                 for m1 = -l1:l1
                     for m2 = -l2:l2
                         for m3 = -l3:l3
@@ -18,7 +18,7 @@ function compute_all(max_angular)
 end
 
 
-for max_angular in [4, 8, 12, 20]
+for max_angular in [4, 8, 12, 16, 20]
     println("max_angular = $max_angular")
     # warmup & compile
     compute_all(max_angular)

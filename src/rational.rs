@@ -46,11 +46,6 @@ impl Rational {
         let value = self.as_f64();
         return value.signum() * value.abs().sqrt();
     }
-
-    /// Get the sign of this `Rational`
-    pub fn sign(&self) -> i8 {
-        return self.numerator.sign;
-    }
 }
 
 impl<T> std::ops::MulAssign<T> for Rational where T: Borrow<Rational> {
