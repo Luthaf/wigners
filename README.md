@@ -1,6 +1,6 @@
 # Calculation of Wigner symbols and related constants
 
-This crate computes Wigner 3j coefficients and Clebsch-Gordan coefficients in
+This package computes Wigner 3j coefficients and Clebsch-Gordan coefficients in
 pure Rust. The calculation is based on the prime factorization of the different
 factorials involved in the coefficients, keeping the values in a rational root
 form (`sign * \sqrt{s / n}`) for as long as possible. This idea for the
@@ -11,9 +11,27 @@ algorithm is described in:
 This implementation takes a lot of inspiration from the
 [WignerSymbols](https://github.com/Jutho/WignerSymbols.jl/) Julia implementation
 (and even started as a direct translation of it), many thanks to them! This
-crate is available under the same license as the Julia package.
+package is available under the same license as the Julia package.
 
 ## Usage
+
+### From python
+
+```
+pip install wigners
+```
+
+And then call one of the function:
+
+```py
+from  wigners import wigner_3j, clebsch_gordan
+
+w3j = wigner_3j(j1, j2, j3, m1, m2, m3)
+
+cg = clebsch_gordan(j1, m1, j2, m1, j3, m3)
+```
+
+### From rust
 
 Add this crate to your `Cargo.toml` dependencies section:
 
@@ -43,12 +61,12 @@ these!
 This benchmark measure the time to compute all possible Wigner 3j symbols up to
 a fixed maximal angular momentum.
 
-| angular momentum | wigners (this crate) | wigner-symbols v0.5 | WignerSymbols.jl v2.0 | wigxjpf v1.11 |
-|------------------|----------------------|---------------------|-----------------------|---------------|
-| 4                | 0.925 ms             | 17.5 ms             | 2.31 ms               | 0.348 ms      |
-| 8                | 5.18 ms              | 151 ms              | 12.0 ms               | 2.40 ms       |
-| 12               | 14.0 ms              | 595 ms              | 23.0 ms               | 8.21 ms       |
-| 20               | 55.0 ms              | 3772 ms             | 88.3 ms               | 43.0 ms       |
+| angular momentum | wigners (this) | wigner-symbols v0.5 | WignerSymbols.jl v2.0 | wigxjpf v1.11 |
+|------------------|----------------|---------------------|-----------------------|---------------|
+| 4                | 0.925 ms       | 17.5 ms             | 2.31 ms               | 0.348 ms      |
+| 8                | 5.18 ms        | 151 ms              | 12.0 ms               | 2.40 ms       |
+| 12               | 14.0 ms        | 595 ms              | 23.0 ms               | 8.21 ms       |
+| 20               | 55.0 ms        | 3772 ms             | 88.3 ms               | 43.0 ms       |
 
 ## Comparison to `wigner-symbols`
 
