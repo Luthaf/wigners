@@ -50,21 +50,21 @@ pub extern fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) ->
     debug_assert!((beta2 - alpha2) >= 0);
     s2 *= factorial((beta2 - alpha2) as u32);
 
-    let series = compute_3j_series(beta1, beta2, beta3, alpha1, alpha2);
+    let (series_numerator, series_denominator) = compute_3j_series(beta1, beta2, beta3, alpha1, alpha2);
 
     let mut numerator = s1.numerator * s2;
-    numerator.sign *= sign * series.sign();
+    numerator.sign *= sign;
     let mut s = Rational::new(numerator, s1.denominator);
 
-    // insert series in the root, the sign is preserved by the multiplication
-    // above. Doing this instead of `series.as_f64() * s.signed_root()` give us
-    // more precision, since some terms might overflow f64 in `series` or `s` if
-    // not simplified together.
-    s *= &series;
-    s *= &series;
+    let series_denominator = Rational::new(PrimeFactorization::one(), series_denominator);
+
+    // insert series denominator in the root, this improves precision compared
+    // to immediately converting the full series to f64
+    s *= &series_denominator;
+    s *= &series_denominator;
     s.simplify();
 
-    return s.signed_root();
+    return series_numerator * s.signed_root();
 }
 
 /// Compute the Clebsch-Gordan coefficient <j1 m1 ; j2 m2 | j3 m3> using their
@@ -128,14 +128,18 @@ fn min(a: i32, b: i32, c: i32) -> i32 {
 }
 
 /// compute the sum appearing in the 3j symbol
-fn compute_3j_series(beta1: i32, beta2: i32, beta3: i32, alpha1: i32, alpha2: i32) -> Rational {
+fn compute_3j_series(beta1: i32, beta2: i32, beta3: i32, alpha1: i32, alpha2: i32) -> (f64, PrimeFactorization) {
     let range = max(alpha1, alpha2, 0)..(min(beta1, beta2, beta3) + 1);
 
     let mut numerators = Vec::with_capacity(range.len());
     let mut denominators = Vec::with_capacity(range.len());
     for k in range {
-        let numerator = if k % 2 == 0 { 1 } else { -1 };
-        numerators.push(PrimeFactorization::new(numerator));
+        let numerator = if k % 2 == 0 {
+            PrimeFactorization::one()
+        } else {
+            PrimeFactorization::minus_one()
+        };
+        numerators.push(numerator);
 
         debug_assert!(k >= 0);
         let mut denominator = factorial(k as u32);
@@ -165,8 +169,7 @@ fn compute_3j_series(beta1: i32, beta2: i32, beta3: i32, alpha1: i32, alpha2: i3
         numerator += num.as_f64();
     }
 
-    debug_assert_eq!((numerator as i32) as f64, numerator);
-    return Rational::new(PrimeFactorization::new(numerator as i32), denominator);
+    return (numerator, denominator);
 }
 
 /// Given a list of numerators and denominators, compute the common denominator
@@ -178,7 +181,7 @@ fn common_denominator(
 ) -> PrimeFactorization {
     debug_assert_eq!(numerators.len(), denominators.len());
     if denominators.is_empty() {
-        return PrimeFactorization::new(1)
+        return PrimeFactorization::one()
     }
 
     let mut denominator = denominators[0].clone();

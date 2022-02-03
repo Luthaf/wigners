@@ -59,14 +59,26 @@ these!
 ## Benchmarks
 
 This benchmark measure the time to compute all possible Wigner 3j symbols up to
-a fixed maximal angular momentum.
+a fixed maximal angular momentum, i.e. a loop like this:
 
-| angular momentum | wigners (this) | wigner-symbols v0.5 | WignerSymbols.jl v2.0 | wigxjpf v1.11 |
-|------------------|----------------|---------------------|-----------------------|---------------|
-| 4                | 0.925 ms       | 17.5 ms             | 2.31 ms               | 0.348 ms      |
-| 8                | 5.18 ms        | 151 ms              | 12.0 ms               | 2.40 ms       |
-| 12               | 14.0 ms        | 595 ms              | 23.0 ms               | 8.21 ms       |
-| 20               | 55.0 ms        | 3772 ms             | 88.3 ms               | 43.0 ms       |
+```
+for j1 in range(max_angular):
+    for j2 in range(max_angular):
+        for j3 in range(max_angular):
+            for m1 in range(-j1, j1 + 1):
+                for m2 in range(-j2, j2 + 1):
+                    for m3 in range(-j3, j3 + 1):
+                        c = wigner_3j(j1, j2, j3, m1, m2, m3)
+
+```
+
+| angular momentum | wigners (this) | wigner-symbols v0.5 | WignerSymbols.jl v2.0 | wigxjpf v1.11 | sympy v1.9 |
+|------------------|----------------|---------------------|-----------------------|---------------|------------|
+| 4                | 1.52 ms        | 28.2 ms             | 1.73 ms               | 0.541 ms      | 83.8 ms    |
+| 8                | 37.4 ms        | 867 ms              | 43.1 ms               | 15.0 ms       | 3.50 s     |
+| 12               | 302 ms         | 7.35 s              | 395 ms                | 131 ms        | 64.2 s     |
+| 16               | 1.44 s         | 36.2 s              | 1.91 s                | 648 ms        |    /       |
+| 20               | 4.65 s         |   /                 | 6.73 s                | 2.34 s        |    /       |
 
 ## Comparison to `wigner-symbols`
 

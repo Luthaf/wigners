@@ -227,7 +227,7 @@ impl std::fmt::Debug for PrimeFactorization {
 
 impl PrimeFactorization {
     /// Compute the prime factorization of the integer `n`
-    pub fn new(n: i32) -> PrimeFactorization {
+    fn new(n: i32) -> PrimeFactorization {
         let sign = match n.cmp(&0) {
             Ordering::Equal => {
                 return PrimeFactorization {
@@ -264,6 +264,16 @@ impl PrimeFactorization {
         return PrimeFactorization {
             sign, factors
         };
+    }
+
+    /// Get the prime factorization of 1
+    pub fn one() -> PrimeFactorization {
+        PrimeFactorization::new(1)
+    }
+
+    /// Get the prime factorization of -1
+    pub fn minus_one() -> PrimeFactorization {
+        PrimeFactorization::new(-1)
     }
 
     /// trim factors to contain no trailing zeros, except if we are representing
