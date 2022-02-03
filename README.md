@@ -36,7 +36,7 @@ cg = clebsch_gordan(j1, m1, j2, m1, j3, m3)
 Add this crate to your `Cargo.toml` dependencies section:
 
 ```toml
-wigners = "0.1.0"
+wigners = "0.1"
 ```
 
 And then call one of the exported function:
