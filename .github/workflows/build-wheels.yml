@@ -21,7 +21,7 @@ jobs:
           - name: M1 macOS
             os: macos-11
             rust-target: aarch64-apple-darwin
-            platform-name: macosx-11-arm64
+            platform-name: macosx-11.0-arm64
           - name: x86_64 Windows
             os: windows-2019
             # TODO: add a 32-bit windows builder?
