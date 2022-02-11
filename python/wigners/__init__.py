@@ -24,9 +24,17 @@ __lib.clebsch_gordan.argtypes = [
 __lib.clebsch_gordan.restype = ctypes.c_double
 
 
+__lib.clear_wigner_3j_cache.argtypes = []
+__lib.clear_wigner_3j_cache.restype = None
+
+
 def wigner_3j(j1: int, j2: int, j3: int, m1: int, m2: int, m3: int) -> float:
     return __lib.wigner_3j(j1, j2, j3, m1, m2, m3)
 
 
 def clebsch_gordan(j1: int, m1: int, j2: int, m2: int, j3: int, m3: int) -> float:
     return __lib.clebsch_gordan(j1, m1, j2, m2, j3, m3)
+
+
+def clear_wigner_3j_cache():
+    return __lib.clear_wigner_3j_cache()

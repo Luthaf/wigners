@@ -59,26 +59,34 @@ these!
 ## Benchmarks
 
 This benchmark measure the time to compute all possible Wigner 3j symbols up to
-a fixed maximal angular momentum, i.e. a loop like this:
+a fixed maximal angular momentum; clearing up any cached values from previous
+angular momentum before starting the loop. In pseudo code, the benchmark looks
+like this:
 
 ```
+if cached_wigner_3j:
+    clear_wigner_3j_cache()
+
+# only measure the time taken by the loop
+start = time.now()
 for j1 in range(max_angular):
     for j2 in range(max_angular):
         for j3 in range(max_angular):
             for m1 in range(-j1, j1 + 1):
                 for m2 in range(-j2, j2 + 1):
                     for m3 in range(-j3, j3 + 1):
-                        c = wigner_3j(j1, j2, j3, m1, m2, m3)
+                        w3j = wigner_3j(j1, j2, j3, m1, m2, m3)
 
+elapsed = start - time.now()
 ```
 
 | angular momentum | wigners (this) | wigner-symbols v0.5 | WignerSymbols.jl v2.0 | wigxjpf v1.11 | sympy v1.9 |
 |------------------|----------------|---------------------|-----------------------|---------------|------------|
-| 4                | 1.52 ms        | 28.2 ms             | 1.73 ms               | 0.541 ms      | 83.8 ms    |
-| 8                | 37.4 ms        | 867 ms              | 43.1 ms               | 15.0 ms       | 3.50 s     |
-| 12               | 302 ms         | 7.35 s              | 395 ms                | 131 ms        | 64.2 s     |
-| 16               | 1.44 s         | 36.2 s              | 1.91 s                | 648 ms        |    /       |
-| 20               | 4.65 s         |   /                 | 6.73 s                | 2.34 s        |    /       |
+| 4                | 0.470 ms       | 28.2 ms             | 3.08 ms               | 0.478 ms      | 83.8 ms    |
+| 8                | 9.84 ms        | 867 ms              | 66.2 ms               | 14.5 ms       | 3.50 s     |
+| 12               | 73.4 ms        | 7.35 s              | 698 ms                | 122 ms        | 64.2 s     |
+| 16               | 342 s          | 36.2 s              | 3.20 s                | 624 ms        |    /       |
+| 20               | 1.14 s         |   /                 | 11.1 s                | 2.18 s        |    /       |
 
 ## Comparison to `wigner-symbols`
 

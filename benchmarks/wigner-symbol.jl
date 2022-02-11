@@ -24,5 +24,6 @@ for max_angular in [4, 8, 12, 16, 20]
     compute_all(max_angular)
     GC.gc()
 
+    empty!(WignerSymbols.Wigner3j)
     @time compute_all(max_angular)
 end

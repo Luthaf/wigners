@@ -1,23 +1,42 @@
+use parking_lot::Mutex;
+
+use lru::LruCache;
+
 use crate::primes::{factorial, PrimeFactorization};
 use crate::rational::Rational;
+
+
+// cache up to that many wigner_3j symbols in a LRU cache. 200_000 entries is
+// enough for our use case of computing all symbols up to `j_{1, 2, 3}=20`
+const WIGNER_3J_CACHE_SIZE: usize = 200_000;
+
+type Wigner3jCacheKey = (i32, i32, i32, i32, i32);
+lazy_static::lazy_static!(
+    static ref CACHED_WIGNER_3J: Mutex<LruCache<Wigner3jCacheKey, f64>> = Mutex::new(LruCache::new(WIGNER_3J_CACHE_SIZE));
+);
+
+#[no_mangle]
+pub extern fn clear_wigner_3j_cache() {
+    CACHED_WIGNER_3J.lock().clear();
+}
 
 /// Compute the Wigner 3j coefficient for the given `j1`, `j2`, `j2`, `m1`,
 /// `m2`, `m3`.
 #[no_mangle]
 pub extern fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> f64 {
     if m1.abs() as u32 > j1 {
-        panic!("invalid j/m in wigner3j: {}/{}", j1, m1);
+        panic!("invalid j1/m1 in wigner3j: {}/{}", j1, m1);
     } else if m2.abs() as u32 > j2 {
-        panic!("invalid j/m in wigner3j: {}/{}", j2, m2);
+        panic!("invalid j2/m2 in wigner3j: {}/{}", j2, m2);
     } else if m3.abs() as u32 > j3 {
-        panic!("invalid j/m in wigner3j: {}/{}", j3, m3);
+        panic!("invalid j3/m3 in wigner3j: {}/{}", j3, m3);
     }
 
     if !triangle_condition(j1, j2, j3) || m1 + m2 + m3 != 0 {
         return 0.0;
     }
 
-    let (j1, j2, j3, m1, m2, _, mut sign) = reorder3j(j1, j2, j3, m1, m2, m3, 1);
+    let (j1, j2, j3, m1, m2, _, mut sign) = reorder3j(j1, j2, j3, m1, m2, m3, 1.0);
 
     let alpha1 = j2 as i32 - m1 - j3 as i32;
     let alpha2 = j1 as i32 + m2 - j3 as i32;
@@ -27,7 +46,14 @@ pub extern fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) ->
 
     // extra sign in definition: alpha1 - alpha2 = j1 + m2 - j2 + m1 = j1 - j2 + m3
     if (alpha1 - alpha2) % 2 != 0 {
-        sign *= -1;
+        sign = -sign;
+    }
+
+    {
+        let mut cache = CACHED_WIGNER_3J.lock();
+        if let Some(&cached_value) = cache.get(&(alpha1, alpha2, beta1, beta2, beta3)) {
+            return sign * cached_value;
+        }
     }
 
     let s1 = triangle_coefficient(j1, j2, j3);
@@ -52,8 +78,7 @@ pub extern fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) ->
 
     let (series_numerator, series_denominator) = compute_3j_series(beta1, beta2, beta3, alpha1, alpha2);
 
-    let mut numerator = s1.numerator * s2;
-    numerator.sign *= sign;
+    let numerator = s1.numerator * s2;
     let mut s = Rational::new(numerator, s1.denominator);
 
     let series_denominator = Rational::new(PrimeFactorization::one(), series_denominator);
@@ -64,7 +89,14 @@ pub extern fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) ->
     s *= &series_denominator;
     s.simplify();
 
-    return series_numerator * s.signed_root();
+    let result = series_numerator * s.signed_root();
+
+    {
+        let mut cache = CACHED_WIGNER_3J.lock();
+        cache.put((alpha1, alpha2, beta1, beta2, beta3), result);
+    }
+
+    return sign * result;
 }
 
 /// Compute the Clebsch-Gordan coefficient <j1 m1 ; j2 m2 | j3 m3> using their
@@ -91,17 +123,17 @@ fn triangle_condition(j1: u32, j2: u32, j3: u32) -> bool {
 }
 
 // reorder j1/m1, j2/m2, j3/m3 such that j1 >= j2 >= j3 and m1 >= 0 or m1 == 0 && m2 >= 0
-fn reorder3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32, mut sign: i8) -> (u32, u32, u32, i32, i32, i32, i8) {
+fn reorder3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32, mut sign: f64) -> (u32, u32, u32, i32, i32, i32, f64) {
     if j1 < j2 {
         return reorder3j(j2, j1, j3, m2, m1, m3, -sign);
     } else if j2 < j3 {
         return reorder3j(j1, j3, j2, m1, m3, m2, -sign);
-    } else if m1 < 0 || m1 == 0 && m2 < 0 {
+    } else if m1 < 0 || (m1 == 0 && m2 < 0) {
         return reorder3j(j1, j2, j3, -m1, -m2, -m3, -sign);
     } else {
         // sign doesn't matter if total J = j1 + j2 + j3 is even
         if (j1 + j2 + j3) % 2 == 0 {
-            sign = 1;
+            sign = 1.0;
         }
         return (j1, j2, j3, m1, m2, m3, sign);
     }
