@@ -1,7 +1,8 @@
 #![allow(clippy::needless_return)]
+
 use std::time::{Duration, Instant};
 
-use wigner_benchmarks::wigxjpf;
+use wigners::wigner_3j;
 
 use criterion::{Criterion, criterion_group, criterion_main};
 
@@ -12,12 +13,7 @@ fn compute_all_wigner_3j(max_angular: i32) {
                 for m1 in -l1..=l1 {
                     for m2 in -l2..=l2 {
                         for m3 in -l3..=l3 {
-                            unsafe {
-                                wigxjpf::wig3jj(
-                                    2 * l1, 2 * l2, 2 * l3,
-                                    2 * m1, 2 * m2, 2 * m3
-                                );
-                            }
+                            wigner_3j(l1 as u32, l2 as u32, l3 as u32, m1, m2, m3);
                         }
                     }
                 }
@@ -27,30 +23,23 @@ fn compute_all_wigner_3j(max_angular: i32) {
 }
 
 fn bench_wigner3j(c: &mut Criterion) {
-    let mut group = c.benchmark_group("wigxjpf");
+    let mut group = c.benchmark_group("wigners");
     group.sample_size(10);
     group.sampling_mode(criterion::SamplingMode::Flat);
+    group.warm_up_time(Duration::from_secs(1));
 
-    for &max_angular in &[4, 8, 12, 16, 20] {
+    for &max_angular in &[4, 8, 12,16, 20] {
         group.bench_function(&format!("max_angular={}", max_angular), |b| {
             b.iter_custom(|n_iters| {
                 let mut duration = Duration::new(0, 0);
                 for _ in 0..n_iters {
-                    unsafe {
-                        wigxjpf::wig_table_init(2 * 100, 6);
-                        wigxjpf::wig_temp_init(2 * 100);
-                    }
+                    wigners::clear_wigner_3j_cache();
 
-                    // only benchmark `compute_all_wigner_3j`, not wig_table
-                    // setup & teardown
+                    // only benchmark `compute_all_wigner_3j`, not including
+                    // previously filled cache
                     let start = Instant::now();
                     compute_all_wigner_3j(max_angular);
                     duration += start.elapsed();
-
-                    unsafe {
-                        wigxjpf::wig_temp_free();
-                        wigxjpf::wig_table_free();
-                    }
                 }
 
                 return duration
