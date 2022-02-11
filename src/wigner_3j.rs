@@ -1,6 +1,7 @@
 use parking_lot::Mutex;
 
 use lru::LruCache;
+use rayon::prelude::*;
 
 use crate::primes::{factorial, PrimeFactorization};
 use crate::rational::Rational;
@@ -115,6 +116,42 @@ pub extern fn clebsch_gordan(j1: u32, m1: i32, j2: u32, m2: i32, j3: u32, m3: i3
     } else {
         return w3j;
     }
+}
+
+
+/// Compute the full array of Clebsch-Gordan coefficients for the three given
+/// `j`.
+///
+/// Data will be written to `output`, which can be interpreted as a row-major
+/// 3-dimensional array with shape `(2 * j1 + 1, 2 * j2 + 1, 2 * j3 + 1)`.
+pub fn clebsch_gordan_array(j1: u32, j2: u32, j3: u32, output: &mut [f64]) {
+    let j1_size = 2 * j1 + 1;
+    let j2_size = 2 * j2 + 1;
+    let j3_size = 2 * j3 + 1;
+
+    let size = (j1_size * j2_size * j3_size) as usize;
+    if output.len() != size {
+        panic!(
+            "invalid output size, expected to have space for {} entries, but got {}",
+            size, output.len()
+        );
+    }
+
+    output.par_iter_mut().enumerate().for_each(|(i, o)| {
+        let i = i as u32;
+        let m1 = ((i / j3_size) / j2_size) as i32 - j1 as i32;
+        let m2 = ((i / j3_size) % j2_size) as i32 - j2 as i32;
+        let m3 = (i % j3_size) as i32 - j3 as i32;
+
+        *o = clebsch_gordan(j1, m1, j2, m2, j3, m3);
+    })
+}
+
+/// Same function as `clebsch_gordan_array`, but can be called directly from C
+#[no_mangle]
+pub unsafe extern fn clebsch_gordan_array_c(j1: u32, j2: u32, j3: u32, data: *mut f64, len: u64) {
+    let slice = std::slice::from_raw_parts_mut(data, len as usize);
+    clebsch_gordan_array(j1, j2, j3, slice);
 }
 
 /// check the triangle condition on j1, j2, j3, i.e. `|j1 - j2| <= j3 <= j1 + j2`

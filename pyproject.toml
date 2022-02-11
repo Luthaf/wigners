@@ -12,6 +12,7 @@ legacy_tox_ini = """
 [testenv]
 deps =
     discover
+    numpy
 
 commands =
     discover -p "*.py" -s python/tests
