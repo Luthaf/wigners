@@ -80,13 +80,26 @@ for j1 in range(max_angular):
 elapsed = start - time.now()
 ```
 
+Here are the results on an Intel Core i7-4870HQ CPU:
+
 | angular momentum | wigners (this) | wigner-symbols v0.5 | WignerSymbols.jl v2.0 | wigxjpf v1.11 | sympy v1.9 |
 |------------------|----------------|---------------------|-----------------------|---------------|------------|
 | 4                | 0.470 ms       | 28.2 ms             | 3.08 ms               | 0.478 ms      | 83.8 ms    |
 | 8                | 9.84 ms        | 867 ms              | 66.2 ms               | 14.5 ms       | 3.50 s     |
 | 12               | 73.4 ms        | 7.35 s              | 698 ms                | 122 ms        | 64.2 s     |
-| 16               | 342 s          | 36.2 s              | 3.20 s                | 624 ms        |    /       |
+| 16               | 342 ms         | 36.2 s              | 3.20 s                | 624 ms        |    /       |
 | 20               | 1.14 s         |   /                 | 11.1 s                | 2.18 s        |    /       |
+
+To run the benchmarks yourself on your own machine, execute the following commands:
+
+```bash
+cd benchmarks
+cargo bench # this gives the results for wigners, wigner-symbols and wigxjpf
+
+python sympy-bench.py # this gives the results for sympy
+
+julia wigner-symbol.jl # this gives the results for WignerSymbols.jl
+```
 
 ## Comparison to `wigner-symbols`
 
