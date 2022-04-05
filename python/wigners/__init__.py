@@ -30,6 +30,7 @@ __lib.clebsch_gordan_array_c.argtypes = [
     ctypes.c_uint32,
     ctypes.c_uint32,
     ctypes.POINTER(ctypes.c_double),
+    ctypes.c_uint64,
 ]
 __lib.clebsch_gordan_array_c.restype = None
 
