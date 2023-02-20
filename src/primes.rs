@@ -239,7 +239,7 @@ impl PrimeFactorization {
             Ordering::Less => -1,
         };
 
-        let mut value = n.abs() as u32;
+        let mut value = n.unsigned_abs();
         let mut factors = SmallVec::new();
         for prime in primes() {
             let mut factor = 0;

@@ -25,11 +25,11 @@ pub extern fn clear_wigner_3j_cache() {
 /// `m2`, `m3`.
 #[no_mangle]
 pub extern fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> f64 {
-    if m1.abs() as u32 > j1 {
+    if m1.unsigned_abs() > j1 {
         panic!("invalid j1/m1 in wigner3j: {}/{}", j1, m1);
-    } else if m2.abs() as u32 > j2 {
+    } else if m2.unsigned_abs() > j2 {
         panic!("invalid j2/m2 in wigner3j: {}/{}", j2, m2);
-    } else if m3.abs() as u32 > j3 {
+    } else if m3.unsigned_abs() > j3 {
         panic!("invalid j3/m3 in wigner3j: {}/{}", j3, m3);
     }
 
