@@ -21,14 +21,21 @@ package is available under the same license as the Julia package.
 pip install wigners
 ```
 
-And then call one of the function:
+And then call one of the exported function:
 
 ```py
-from  wigners import wigner_3j, clebsch_gordan
+import wigners
 
-w3j = wigner_3j(j1, j2, j3, m1, m2, m3)
+w3j = wigners.wigner_3j(j1, j2, j3, m1, m2, m3)
 
-cg = clebsch_gordan(j1, m1, j2, m1, j3, m3)
+cg = wigners.clebsch_gordan(j1, m1, j2, m1, j3, m3)
+
+# full array of Clebsch-Gordan coefficients, computed in parallel
+cg_array = wigners.clebsch_gordan_array(ji, j2, j3)
+
+# we have an internal cache for recently computed CG coefficients, if you
+# need to clean it up you can use this function
+wigners.clear_wigner_3j_cache()
 ```
 
 ### From rust
@@ -36,7 +43,7 @@ cg = clebsch_gordan(j1, m1, j2, m1, j3, m3)
 Add this crate to your `Cargo.toml` dependencies section:
 
 ```toml
-wigners = "0.2"
+wigners = "0.3"
 ```
 
 And then call one of the exported function:
@@ -45,6 +52,8 @@ And then call one of the exported function:
 let w3j = wigners::wigner_3j(j1, j2, j3, m1, m2, m3);
 
 let cg = wigners::clebsch_gordan(j1, m1, j2, m1, j3, m3);
+
+wigners::clear_wigner_3j_cache();
 ```
 
 ## Limitations
@@ -80,15 +89,38 @@ for j1 in range(max_angular):
 elapsed = start - time.now()
 ```
 
-Here are the results on an Intel Core i7-4870HQ CPU:
+Here are the results on an Apple M1 Max (10 cores) CPU:
 
-| angular momentum | wigners (this) | wigner-symbols v0.5 | WignerSymbols.jl v2.0 | wigxjpf v1.11 | sympy v1.9 |
-|------------------|----------------|---------------------|-----------------------|---------------|------------|
-| 4                | 0.470 ms       | 28.2 ms             | 3.08 ms               | 0.478 ms      | 83.8 ms    |
-| 8                | 9.84 ms        | 867 ms              | 66.2 ms               | 14.5 ms       | 3.50 s     |
-| 12               | 73.4 ms        | 7.35 s              | 698 ms                | 122 ms        | 64.2 s     |
-| 16               | 342 ms         | 36.2 s              | 3.20 s                | 624 ms        |    /       |
-| 20               | 1.14 s         |   /                 | 11.1 s                | 2.18 s        |    /       |
+| angular momentum | wigners (this) | wigner-symbols v0.5 | WignerSymbols.jl v2.0 | wigxjpf v1.11 | sympy v1.11 |
+|------------------|----------------|---------------------|-----------------------|---------------|-------------|
+| 4                | 0.190 ms       | 7.50 ms             | 2.58 ms               | 0.228 ms      | 28.7 ms     |
+| 8                | 4.46 ms        | 227 ms              | 47.0 ms               | 7.36 ms       | 1.36 s      |
+| 12               | 34.0 ms        | 1.94 s              | 434 ms                | 66.2 ms       | 23.1 s      |
+| 16               | 156 ms         | 9.34 s              | 1.98 s                | 333 ms        |    /        |
+| 20               | 531 ms         |   /                 | 6.35 s                | 1.21 s        |    /        |
+
+
+A second set of benchmarks checks computing Wigner symbols for large `j`, with the
+corresponding `m` varying from -10 to 10, i.e. in pseudo code:
+
+```
+if cached_wigner_3j:
+    clear_wigner_3j_cache()
+
+# only measure the time taken by the loop
+start = time.now()
+for m1 in range(-10, 10 + 1):
+    for m2 in range(-10, 10 + 1):
+        for m3 in range(-10, 10 + 1):
+            w3j = wigner_3j(j1, j2, j3, m1, m2, m3)
+
+elapsed = start - time.now()
+```
+
+
+| (j1, j2, j3)     | wigners (this) | wigner-symbols v0.5 | WignerSymbols.jl v2.0 | wigxjpf v1.11 | sympy v1.11 |
+|------------------|----------------|---------------------|-----------------------|---------------|-------------|
+| (300, 100, 250)  | 38.7 ms        | 16.5 ms             | 32.9 ms               | 7.60 ms       | 2.31 s      |
 
 To run the benchmarks yourself on your own machine, execute the following commands:
 
@@ -114,10 +146,8 @@ GMP library might be problematic for you for one of these reason:
 - it is written in C and C++; and as such is hard to cross-compile or compile to WASM;
 - it does not support the MSVC compiler on windows, only the GNU compilers
 
-However, while this crate should be able to compute winger 3j coefficients up to
-relatively high angular momentum, it does not use arbitrary precision integers
-and might fail for very high value. This crate was validated up to l=100, which
-is more than enough for my use case.
+As you can see in the benchmarks above, this usage of GMP becomes an advantage
+for large j, where the algorithm used in this crate does not scale as well.
 
 ## License
 

@@ -1,5 +1,6 @@
-import os
 import ctypes
+import os
+
 import numpy as np
 
 __lib = ctypes.CDLL(os.path.join(os.path.dirname(__file__), "_wigners.so"))

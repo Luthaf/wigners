@@ -1,5 +1,6 @@
-from sympy.physics.wigner import wigner_3j
 import time
+
+from sympy.physics.wigner import wigner_3j
 
 
 def format_time(duration):
@@ -21,3 +22,12 @@ if __name__ == "__main__":
                                 c = wigner_3j(j1, j2, j3, m1, m2, m3)
 
         print(f"max_angular = {max_angular} took {format_time(time.time() - start)}")
+
+    start = time.time()
+
+    for m1 in range(-10, 10 + 1):
+        for m2 in range(-10, 10 + 1):
+            for m3 in range(-10, 10 + 1):
+                c = wigner_3j(300, 100, 250, m1, m2, m3)
+
+    print(f"j = (300, 100, 250) took {format_time(time.time() - start)}")
