@@ -1,7 +1,12 @@
+use std::num::NonZeroUsize;
+
 use parking_lot::Mutex;
 
 use lru::LruCache;
 use rayon::prelude::*;
+
+use num_bigint::BigInt;
+use num_traits::ToPrimitive;
 
 use crate::primes::{factorial, PrimeFactorization};
 use crate::rational::Rational;
@@ -13,7 +18,9 @@ const WIGNER_3J_CACHE_SIZE: usize = 200_000;
 
 type Wigner3jCacheKey = (i32, i32, i32, i32, i32);
 lazy_static::lazy_static!(
-    static ref CACHED_WIGNER_3J: Mutex<LruCache<Wigner3jCacheKey, f64>> = Mutex::new(LruCache::new(WIGNER_3J_CACHE_SIZE));
+    static ref CACHED_WIGNER_3J: Mutex<LruCache<Wigner3jCacheKey, f64>> = Mutex::new(
+        LruCache::new(NonZeroUsize::new(WIGNER_3J_CACHE_SIZE).expect("cache size is zero"))
+    );
 );
 
 #[no_mangle]
@@ -39,6 +46,7 @@ pub extern fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) ->
 
     let (j1, j2, j3, m1, m2, _, mut sign) = reorder3j(j1, j2, j3, m1, m2, m3, 1.0);
 
+    let total_j = j1 + j2 + j3;
     let alpha1 = j2 as i32 - m1 - j3 as i32;
     let alpha2 = j1 as i32 + m2 - j3 as i32;
     let beta1 = (j1 + j2 - j3) as i32;
@@ -77,7 +85,7 @@ pub extern fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) ->
     debug_assert!((beta2 - alpha2) >= 0);
     s2 *= factorial((beta2 - alpha2) as u32);
 
-    let (series_numerator, series_denominator) = compute_3j_series(beta1, beta2, beta3, alpha1, alpha2);
+    let (series_numerator, series_denominator) = compute_3j_series(total_j, beta1, beta2, beta3, alpha1, alpha2);
 
     let numerator = s1.numerator * s2;
     let mut s = Rational::new(numerator, s1.denominator);
@@ -197,7 +205,7 @@ fn min(a: i32, b: i32, c: i32) -> i32 {
 }
 
 /// compute the sum appearing in the 3j symbol
-fn compute_3j_series(beta1: i32, beta2: i32, beta3: i32, alpha1: i32, alpha2: i32) -> (f64, PrimeFactorization) {
+fn compute_3j_series(total_j: u32, beta1: i32, beta2: i32, beta3: i32, alpha1: i32, alpha2: i32) -> (f64, PrimeFactorization) {
     let range = max(alpha1, alpha2, 0)..(min(beta1, beta2, beta3) + 1);
 
     let mut numerators = Vec::with_capacity(range.len());
@@ -232,11 +240,22 @@ fn compute_3j_series(beta1: i32, beta2: i32, beta3: i32, alpha1: i32, alpha2: i3
     }
 
     let denominator = common_denominator(&mut numerators, &denominators);
-    let mut numerator = 0.0;
 
-    for num in numerators {
-        numerator += num.as_f64();
-    }
+    let numerator = if total_j > 100 {
+        // For large total J, we will overflow f64 in this sum, but performing
+        // the sum with big integers is enough to recover the full precision
+        let mut numerator = BigInt::from(0);
+        for num in numerators {
+            numerator += num.as_bigint();
+        }
+        numerator.to_f64().expect("not a f64")
+    } else {
+        let mut numerator = 0.0;
+        for num in numerators {
+            numerator += num.as_f64();
+        }
+        numerator
+    };
 
     return (numerator, denominator);
 }
@@ -283,6 +302,9 @@ mod tests {
         assert_ulps_eq!(wigner_3j(100, 100, 100, 100, -100, 0), 2.689688852311291e-13);
 
         assert_ulps_eq!(wigner_3j(0, 1, 1, 0, 0, 0), -0.5773502691896257);
+
+        // https://github.com/Luthaf/wigners/issues/7
+        assert_ulps_eq!(wigner_3j(100, 300, 285, 2, -2, 0), 0.001979165708981953);
     }
 
     #[test]

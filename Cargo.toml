@@ -18,8 +18,10 @@ bench = false
 lazy_static = "1"
 smallvec = "1"
 parking_lot = "0.12"
-lru = "0.7"
+lru = "0.10"
 rayon = "1"
+num-bigint = "0.4"
+num-traits = "0.2"
 
 [dev-dependencies]
 approx = "0.5"
