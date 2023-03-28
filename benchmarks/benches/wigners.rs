@@ -22,6 +22,16 @@ fn compute_all_wigner_3j(max_angular: i32) {
     }
 }
 
+fn compute_large_wigner_3j(j1: u32, j2: u32, j3: u32) {
+    for m1 in -10..=10 {
+        for m2 in -10..=10 {
+            for m3 in -10..=10 {
+                wigner_3j(j1, j2, j3, m1, m2, m3);
+            }
+        }
+    }
+}
+
 fn bench_wigner3j(c: &mut Criterion) {
     let mut group = c.benchmark_group("wigners");
     group.sample_size(10);
@@ -46,6 +56,23 @@ fn bench_wigner3j(c: &mut Criterion) {
             })
         });
     }
+
+    group.bench_function("j = (300, 100, 250)", |b| {
+        b.iter_custom(|n_iters| {
+            let mut duration = Duration::new(0, 0);
+            for _ in 0..n_iters {
+                wigners::clear_wigner_3j_cache();
+
+                // only benchmark `compute_all_wigner_3j`, not including
+                // previously filled cache
+                let start = Instant::now();
+                compute_large_wigner_3j(300, 100, 250);
+                duration += start.elapsed();
+            }
+
+            return duration
+        })
+    });
 }
 
 criterion_group!(wigner3j, bench_wigner3j);

@@ -17,13 +17,32 @@ function compute_all(max_angular)
     end
 end
 
+function compute_large(j1, j2, j3)
+    for m1 = -10:10
+        for m2 = -10:10
+            for m3 = -10:10
+                wigner3j(Float64, j1, j2, j3, m1, m2, m3)
+            end
+        end
+    end
+end
+
 
 for max_angular in [4, 8, 12, 16, 20]
     println("max_angular = $max_angular")
     # warmup & compile
     compute_all(max_angular)
+    empty!(WignerSymbols.Wigner3j)
     GC.gc()
 
-    empty!(WignerSymbols.Wigner3j)
     @time compute_all(max_angular)
 end
+
+
+println("j = (300, 100, 250)")
+# warmup & compile
+compute_large(300, 100, 250)
+empty!(WignerSymbols.Wigner3j)
+GC.gc()
+
+@time compute_large(300, 100, 250)

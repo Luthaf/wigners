@@ -8,7 +8,7 @@ publish = false
 cmake = "0.1"
 
 [dev-dependencies]
-criterion = "0.3"
+criterion = "0.4"
 wigners = {path = ".."}
 wigner-symbols = "0.5"
 
