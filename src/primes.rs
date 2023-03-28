@@ -3,6 +3,7 @@ use std::cmp::Ordering;
 use std::sync::RwLock;
 
 use smallvec::SmallVec;
+use num_bigint::BigInt;
 
 /// Store the first 1000 primes, to be used for fast prime decomposition of
 /// factorial
@@ -311,6 +312,14 @@ impl PrimeFactorization {
         let mut result = self.sign as f64;
         for (prime, &power) in primes().map(|p| p as f64).zip(&self.factors) {
             result *= prime.powi(power as i32);
+        }
+        return result;
+    }
+
+    pub fn as_bigint(&self) -> BigInt {
+        let mut result = BigInt::from(self.sign);
+        for (prime, &power) in primes().zip(&self.factors) {
+            result *= BigInt::from(prime).pow(power as u32);
         }
         return result;
     }
