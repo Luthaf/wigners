@@ -1,7 +1,9 @@
 [package]
 name = "wigners"
 version = "0.3.0"
-edition = "2018"
+edition = "2021"
+rust-version = "1.64"
+
 authors = ["Guillaume Fraux <guillaume.fraux@epfl.ch>"]
 repository = "https://github.com/luthaf/wigners"
 license = "MIT/Apache-2.0"
