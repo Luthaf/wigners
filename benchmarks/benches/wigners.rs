@@ -73,6 +73,9 @@ fn bench_wigner3j(c: &mut Criterion) {
             return duration
         })
     });
+
+    let v = wigners::wigner_3j(300, 100, 250, 0, 1, -1);
+    dbg!(v);
 }
 
 criterion_group!(wigner3j, bench_wigner3j);

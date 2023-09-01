@@ -89,15 +89,23 @@ for j1 in range(max_angular):
 elapsed = start - time.now()
 ```
 
-Here are the results on an Apple M1 Max (10 cores) CPU:
+Here are the results on an Apple M1 Max (10 cores) CPU, against a handful of
+other libraries:
 
-| angular momentum | wigners (this) | wigner-symbols v0.5 | WignerSymbols.jl v2.0 | wigxjpf v1.11 | sympy v1.11 |
-|------------------|----------------|---------------------|-----------------------|---------------|-------------|
-| 4                | 0.190 ms       | 7.50 ms             | 2.58 ms               | 0.228 ms      | 28.7 ms     |
-| 8                | 4.46 ms        | 227 ms              | 47.0 ms               | 7.36 ms       | 1.36 s      |
-| 12               | 34.0 ms        | 1.94 s              | 434 ms                | 66.2 ms       | 23.1 s      |
-| 16               | 156 ms         | 9.34 s              | 1.98 s                | 333 ms        |    /        |
-| 20               | 531 ms         |   /                 | 6.35 s                | 1.21 s        |    /        |
+- wigner-symbols: https://crates.io/crates/wigner-symbols
+- WignerSymbols.jl: https://github.com/Jutho/WignerSymbols.jl
+- wigxjpf: http://fy.chalmers.se/subatom/wigxjpf/
+- 0382/WignerSymbol: https://github.com/0382/WignerSymbol
+- sympy: https://docs.sympy.org/latest/modules/physics/quantum/cg.html
+
+| code & version             | max_angular=4 |    8    |   12    |   16    |   20   |
+|----------------------------|---------------|---------|---------|---------|--------|
+| wigners (this)             |  0.190 ms     | 4.60 ms | 36.5 ms | 172 ms  | 572 ms |
+| wigner-symbols v0.5        |  6.00 ms      | 181 ms  | 1.53 s  | 7.32 s  |   /    |
+| WignerSymbols.jl v2.0      |  1.09 ms      | 21.1 ms | 179 ms  | 902 ms  | 3.09 s |
+| wigxjpf v1.11              |  0.237 ms     | 7.65 ms | 68.3 ms | 342 ms  | 1.24 s |
+| 0382/WignerSymbol vf8c8dce |  0.070 ms     | 2.26 ms | 19.3 ms | 93.5 ms | 320 ms |
+| sympy v1.11                |  24.8 ms      | 1.15 s  | 20.8 s  |    /    |   /    |
 
 
 A second set of benchmarks checks computing Wigner symbols for large `j`, with the
@@ -117,16 +125,21 @@ for m1 in range(-10, 10 + 1):
 elapsed = start - time.now()
 ```
 
+| code & version             | j1=300, j2=100, j3=250  |
+|----------------------------|-------------------------|
+| wigners (this)             |  29.2 ms                |
+| wigner-symbols v0.5        |  13.8 ms                |
+| WignerSymbols.jl v2.0      |  11.5 ms                |
+| wigxjpf v1.11              |  7.45 ms                |
+| 0382/WignerSymbol vf8c8dce |  / (wrong result)       |
+| sympy v1.11                |  2.34 s                 |
 
-| (j1, j2, j3)     | wigners (this) | wigner-symbols v0.5 | WignerSymbols.jl v2.0 | wigxjpf v1.11 | sympy v1.11 |
-|------------------|----------------|---------------------|-----------------------|---------------|-------------|
-| (300, 100, 250)  | 38.7 ms        | 16.5 ms             | 32.9 ms               | 7.60 ms       | 2.31 s      |
 
 To run the benchmarks yourself on your own machine, execute the following commands:
 
 ```bash
 cd benchmarks
-cargo bench # this gives the results for wigners, wigner-symbols and wigxjpf
+cargo bench # this gives the results for wigners, wigner-symbols, wigxjpf and 0382/WignerSymbol
 
 python sympy-bench.py # this gives the results for sympy
 
