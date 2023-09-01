@@ -29,8 +29,19 @@ jobs:
         with:
           toolchain: ${{ matrix.rust-version }}
 
+      - name: setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
       - name: run tests
         run: cargo test ${{ matrix.cargo-build-flags }}
+
+      - name: check the code against sympy
+        run: |
+          pip install .
+          pip install sympy
+          python test_vs_sympy.py
 
       - name: check that benchmarks compile and run once
         if: matrix.build-type == 'release'
