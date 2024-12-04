@@ -35,6 +35,15 @@ __lib.clebsch_gordan_array_c.argtypes = [
 ]
 __lib.clebsch_gordan_array_c.restype = None
 
+__lib.clebsch_gordan_real_array_c.argtypes = [
+    ctypes.c_uint32,
+    ctypes.c_uint32,
+    ctypes.c_uint32,
+    ctypes.POINTER(ctypes.c_double),
+    ctypes.c_uint64,
+]
+__lib.clebsch_gordan_real_array_c.restype = None
+
 
 __lib.clear_wigner_3j_cache.argtypes = []
 __lib.clear_wigner_3j_cache.restype = None
@@ -65,15 +74,34 @@ def clebsch_gordan(j1: int, m1: int, j2: int, m2: int, j3: int, m3: int) -> floa
 
 def clebsch_gordan_array(j1: int, j2: int, j3: int) -> np.ndarray:
     """
-    Compute a full array of Clebsch-Gordan coefficient for the three given
-    ``j``.
+    Compute a full array of Clebsch-Gordan coefficient for the three given ``j``.
 
-    The result is a 3-dimensional array with shape ``(2 * j1 + 1, 2 * j2 + 1, 2
-    * j3 + 1)``.
+    The result is a 3-dimensional array with shape
+    ``(2 * j1 + 1, 2 * j2 + 1, 2 * j3 + 1)``.
     """
     array = np.zeros((2 * j1 + 1, 2 * j2 + 1, 2 * j3 + 1), dtype=np.float64)
     ptr = array.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
     __lib.clebsch_gordan_array_c(j1, j2, j3, ptr, array.size)
+    return array
+
+
+def clebsch_gordan_array_real(j1: int, j2: int, j3: int) -> np.ndarray:
+    r"""
+    Compute a full array of Clebsch-Gordan coefficient that apply to real-valued
+    spherical harmonics.
+
+    This assumes the following convention for real spherical harmonics:
+
+    .. math::
+        \begin{display}
+            Y_lm = &\frac{i}{\sqrt{2}}*(Y_l^m-(-1)^m Y_l^(-m)) \qquad\text{if }m < 0 \\
+                   &Y_l^m                                      \qquad\text{if }m == 0 \\
+                   &\frac{1}{\sqrt{2}}*(Y_l^(-m)+(-1)^m Y_l^m) \qquad\text{if }m > 0 \\
+        \end{display}
+    """
+    array = np.zeros((2 * j1 + 1, 2 * j2 + 1, 2 * j3 + 1), dtype=np.float64)
+    ptr = array.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+    __lib.clebsch_gordan_real_array_c(j1, j2, j3, ptr, array.size)
     return array
 
 

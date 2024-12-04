@@ -1,6 +1,6 @@
 [package]
 name = "wigners"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2018"
 authors = ["Guillaume Fraux <guillaume.fraux@epfl.ch>"]
 repository = "https://github.com/luthaf/wigners"
@@ -18,10 +18,11 @@ bench = false
 lazy_static = "1"
 smallvec = "1"
 parking_lot = "0.12"
-lru = "0.11"
+lru = "0.12"
 rayon = "1"
 num-bigint = "0.4"
 num-traits = "0.2"
+ndarray = {version = "0.16"}
 
 [dev-dependencies]
 approx = "0.5"
