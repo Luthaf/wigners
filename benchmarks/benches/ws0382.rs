@@ -52,7 +52,7 @@ fn bench_wigner3j(c: &mut Criterion) {
     }
 
     for &max_angular in &[4, 8, 12, 16, 20] {
-        group.bench_function(&format!("max_angular={}", max_angular), |b| {
+        group.bench_function(format!("max_angular={}", max_angular), |b| {
             b.iter(|| compute_all_wigner_3j(max_angular))
         });
     }
