@@ -267,13 +267,13 @@ impl PrimeFactorization {
     }
 
     /// Get the prime factorization of 1
-    pub fn one() -> PrimeFactorization {
+    pub fn one() -> Self {
         Self::new(1)
     }
 
     /// Get the prime factorization of -1
-    pub fn minus_one() -> PrimeFactorization {
-        PrimeFactorization::new(-1)
+    pub fn minus_one() -> Self {
+        Self::new(-1)
     }
 
     /// trim factors to contain no trailing zeros, except if we are representing
@@ -295,7 +295,7 @@ impl PrimeFactorization {
 
     /// Set this PrimeFactorization to the least common multiple of itself and
     /// `other`
-    pub fn least_common_multiple(&mut self, other: &PrimeFactorization) {
+    pub fn least_common_multiple(&mut self, other: &Self) {
         self.sign *= other.sign;
         if other.factors.len() > self.factors.len() {
             self.factors.resize(other.factors.len(), 0);
@@ -326,7 +326,7 @@ impl PrimeFactorization {
 
 impl<T> std::ops::MulAssign<T> for PrimeFactorization
 where
-    T: Borrow<PrimeFactorization>,
+    T: Borrow<Self>,
 {
     fn mul_assign(&mut self, rhs: T) {
         let rhs = rhs.borrow();
@@ -348,7 +348,7 @@ where
 }
 
 impl std::ops::Mul for PrimeFactorization {
-    type Output = PrimeFactorization;
+    type Output = Self;
 
     fn mul(mut self, rhs: Self) -> Self::Output {
         self *= &rhs;
@@ -358,7 +358,7 @@ impl std::ops::Mul for PrimeFactorization {
 
 impl<T> std::ops::DivAssign<T> for PrimeFactorization
 where
-    T: Borrow<PrimeFactorization>,
+    T: Borrow<Self>,
 {
     fn div_assign(&mut self, rhs: T) {
         let rhs = rhs.borrow();
@@ -387,7 +387,7 @@ where
 }
 
 impl std::ops::Div for PrimeFactorization {
-    type Output = PrimeFactorization;
+    type Output = Self;
 
     fn div(mut self, rhs: Self) -> Self::Output {
         self /= rhs;
@@ -443,10 +443,7 @@ fn compute_factorial(n: u32) -> PrimeFactorization {
         }
     }
 
-    return PrimeFactorization {
-        sign: 1,
-        factors: factors,
-    };
+    PrimeFactorization { sign: 1, factors }
 }
 
 #[cfg(test)]

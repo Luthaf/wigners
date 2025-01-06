@@ -13,13 +13,13 @@ pub struct Rational {
 
 impl Rational {
     /// Create a new `Rational` with the given `numerator` and `denominator`
-    pub fn new(mut numerator: PrimeFactorization, mut denominator: PrimeFactorization) -> Rational {
+    pub fn new(mut numerator: PrimeFactorization, mut denominator: PrimeFactorization) -> Self {
         numerator.sign *= denominator.sign;
         denominator.sign = 1;
-        return Rational {
+        Self {
             numerator,
             denominator,
-        };
+        }
     }
 
     /// Divide both numerator and denominator by their greatest common divider
