@@ -211,11 +211,11 @@ fn triangle_coefficient(j1: u32, j2: u32, j3: u32) -> Rational {
 }
 
 fn max(a: i32, b: i32, c: i32) -> i32 {
-    std::cmp::max(a, std::cmp::max(b, c))
+    a.max(b.max(c))
 }
 
 fn min(a: i32, b: i32, c: i32) -> i32 {
-    std::cmp::min(a, std::cmp::min(b, c))
+    a.min(b.min(c))
 }
 
 /// compute the sum appearing in the 3j symbol

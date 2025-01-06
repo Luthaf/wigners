@@ -31,7 +31,7 @@ impl Rational {
             .iter_mut()
             .zip(self.denominator.factors.iter_mut())
         {
-            let gcd = std::cmp::min(*num_factor, *den_factor);
+            let gcd = *num_factor.min(den_factor);
             *num_factor -= gcd;
             *den_factor -= gcd;
         }

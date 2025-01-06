@@ -299,7 +299,7 @@ impl PrimeFactorization {
         }
 
         for (self_factor, &other_factor) in self.factors.iter_mut().zip(&other.factors) {
-            *self_factor = std::cmp::max(*self_factor, other_factor);
+            *self_factor = (*self_factor).max(other_factor);
         }
     }
 
