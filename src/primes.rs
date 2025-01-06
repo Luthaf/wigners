@@ -120,10 +120,10 @@ struct Primes {
 impl Primes {
     /// Create a new `Primes` instance. It is able to give any prime below 7919
     /// (1000-th prime) in O(1) time, and computes & cache higher values
-    fn new() -> Primes {
-        return Primes {
+    fn new() -> Self {
+        Self {
             extra_primes: RwLock::new(vec![7927]),
-        };
+        }
     }
 
     /// Get the `nth` prime
@@ -229,10 +229,10 @@ impl std::fmt::Debug for PrimeFactorization {
 
 impl PrimeFactorization {
     /// Compute the prime factorization of the integer `n`
-    fn new(n: i32) -> PrimeFactorization {
+    fn new(n: i32) -> Self {
         let sign = match n.cmp(&0) {
             Ordering::Equal => {
-                return PrimeFactorization {
+                return Self {
                     factors: SmallVec::new(),
                     sign: 0,
                 }
@@ -263,12 +263,12 @@ impl PrimeFactorization {
             }
         }
 
-        return PrimeFactorization { sign, factors };
+        Self { sign, factors }
     }
 
     /// Get the prime factorization of 1
     pub fn one() -> PrimeFactorization {
-        PrimeFactorization::new(1)
+        Self::new(1)
     }
 
     /// Get the prime factorization of -1
