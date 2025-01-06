@@ -191,7 +191,7 @@ impl std::iter::Iterator for PrimeIter {
 /// `PrimeFactorization` represents the prime factorization of an arbitrary
 /// large integer, even if this integer would overflow native machine integers
 /// (i32/i64).
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Default)]
 pub struct PrimeFactorization {
     /// sign of the integer, stored as 1/0/-1
     pub(crate) sign: i8,
@@ -232,10 +232,7 @@ impl PrimeFactorization {
     fn new(n: i32) -> Self {
         let sign = match n.cmp(&0) {
             Ordering::Equal => {
-                return Self {
-                    factors: SmallVec::new(),
-                    sign: 0,
-                }
+                return Self::default();
             }
             Ordering::Greater => 1,
             Ordering::Less => -1,
