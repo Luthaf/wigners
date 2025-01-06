@@ -137,13 +137,12 @@ pub fn clebsch_gordan_array(j1: u32, j2: u32, j3: u32, output: &mut [f64]) {
     let j3_size = 2 * j3 + 1;
 
     let size = (j1_size * j2_size * j3_size) as usize;
-    if output.len() != size {
-        panic!(
-            "invalid output size, expected to have space for {} entries, but got {}",
-            size,
-            output.len()
-        );
-    }
+    assert!(
+        output.len() == size,
+        "invalid output size, expected to have space for {} entries, but got {}",
+        size,
+        output.len()
+    );
 
     output.par_iter_mut().enumerate().for_each(|(i, o)| {
         let i = i as u32;

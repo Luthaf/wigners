@@ -359,9 +359,7 @@ where
 {
     fn div_assign(&mut self, rhs: T) {
         let rhs = rhs.borrow();
-        if rhs.sign == 0 {
-            panic!("attempt to divide by zero")
-        }
+        assert!(rhs.sign != 0, "attempt to divide by zero");
 
         if self.sign == 0 {
             return;
@@ -373,9 +371,10 @@ where
         }
 
         for (factor, &rhs_factor) in self.factors.iter_mut().zip(&rhs.factors) {
-            if rhs_factor > *factor {
-                panic!("can not divide if the factorization do not have common prime factor");
-            }
+            assert!(
+                rhs_factor <= *factor,
+                "can not divide if the factorization do not have common prime factor"
+            );
             *factor -= rhs_factor;
         }
 
