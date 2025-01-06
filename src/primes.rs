@@ -223,7 +223,7 @@ impl std::fmt::Debug for PrimeFactorization {
             }
         }
 
-        return write!(f, "{}", factors.join(" x "));
+        write!(f, "{}", factors.join(" x "))
     }
 }
 
@@ -236,7 +236,7 @@ impl PrimeFactorization {
                     factors: SmallVec::new(),
                     sign: 0,
                 }
-            },
+            }
             Ordering::Greater => 1,
             Ordering::Less => -1,
         };
@@ -352,7 +352,7 @@ impl std::ops::Mul for PrimeFactorization {
 
     fn mul(mut self, rhs: Self) -> Self::Output {
         self *= &rhs;
-        return self;
+        self
     }
 }
 
@@ -391,7 +391,7 @@ impl std::ops::Div for PrimeFactorization {
 
     fn div(mut self, rhs: Self) -> Self::Output {
         self /= rhs;
-        return self;
+        self
     }
 }
 
@@ -411,9 +411,9 @@ lazy_static::lazy_static! {
 /// Compute the factorial of the integer `n` as a prime factorization
 pub fn factorial(n: u32) -> PrimeFactorization {
     if (n as usize) < FACTORIAL_CACHE_SIZE {
-        return FACTORIAL_TABLE[n as usize].clone();
+        FACTORIAL_TABLE[n as usize].clone()
     } else {
-        return compute_factorial(n);
+        compute_factorial(n)
     }
 }
 

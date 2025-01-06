@@ -105,7 +105,7 @@ pub extern "C" fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32
         cache.put((alpha1, alpha2, beta1, beta2, beta3), result);
     }
 
-    return sign * result;
+    sign * result
 }
 
 /// Compute the Clebsch-Gordan coefficient <j1 m1 ; j2 m2 | j3 m3> using their
@@ -120,9 +120,9 @@ pub extern "C" fn clebsch_gordan(j1: u32, m1: i32, j2: u32, m2: i32, j3: u32, m3
 
     w3j *= f64::sqrt((2 * j3 + 1) as f64);
     if (j1 as i32 - j2 as i32 + m3) % 2 != 0 {
-        return -w3j;
+        -w3j
     } else {
-        return w3j;
+        w3j
     }
 }
 
@@ -170,7 +170,7 @@ pub unsafe extern "C" fn clebsch_gordan_array_c(
 
 /// check the triangle condition on j1, j2, j3, i.e. `|j1 - j2| <= j3 <= j1 + j2`
 fn triangle_condition(j1: u32, j2: u32, j3: u32) -> bool {
-    return (j3 <= j1 + j2) && (j1 <= j2 + j3) && (j2 <= j3 + j1);
+    (j3 <= j1 + j2) && (j1 <= j2 + j3) && (j2 <= j3 + j1)
 }
 
 // reorder j1/m1, j2/m2, j3/m3 such that j1 >= j2 >= j3 and m1 >= 0 or m1 == 0 && m2 >= 0
@@ -184,17 +184,17 @@ fn reorder3j(
     mut sign: f64,
 ) -> (u32, u32, u32, i32, i32, i32, f64) {
     if j1 < j2 {
-        return reorder3j(j2, j1, j3, m2, m1, m3, -sign);
+        reorder3j(j2, j1, j3, m2, m1, m3, -sign)
     } else if j2 < j3 {
-        return reorder3j(j1, j3, j2, m1, m3, m2, -sign);
+        reorder3j(j1, j3, j2, m1, m3, m2, -sign)
     } else if m1 < 0 || (m1 == 0 && m2 < 0) {
-        return reorder3j(j1, j2, j3, -m1, -m2, -m3, -sign);
+        reorder3j(j1, j2, j3, -m1, -m2, -m3, -sign)
     } else {
         // sign doesn't matter if total J = j1 + j2 + j3 is even
         if (j1 + j2 + j3) % 2 == 0 {
             sign = 1.0;
         }
-        return (j1, j2, j3, m1, m2, m3, sign);
+        (j1, j2, j3, m1, m2, m3, sign)
     }
 }
 
@@ -207,7 +207,7 @@ fn triangle_coefficient(j1: u32, j2: u32, j3: u32) -> Rational {
 
     let mut result = Rational::new(numerator, denominator);
     result.simplify();
-    return result;
+    result
 }
 
 fn max(a: i32, b: i32, c: i32) -> i32 {
@@ -278,7 +278,7 @@ fn compute_3j_series(
         numerator
     };
 
-    return (numerator, denominator);
+    (numerator, denominator)
 }
 
 /// Given a list of numerators and denominators, compute the common denominator
@@ -304,7 +304,7 @@ fn common_denominator(
         *num /= den;
     }
 
-    return denominator;
+    denominator
 }
 
 #[cfg(test)]
