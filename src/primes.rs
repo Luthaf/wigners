@@ -159,7 +159,7 @@ impl Primes {
             data.push(p);
         }
 
-        return *data.get(nth).expect("missing last prime");
+        *data.get(nth).expect("missing last prime")
     }
 }
 
@@ -175,7 +175,7 @@ struct PrimeIter {
 
 /// Get an iterator over prime numbers. This iterator have infinite size!
 fn primes() -> PrimeIter {
-    return PrimeIter { next: 0 };
+    PrimeIter { next: 0 }
 }
 
 impl std::iter::Iterator for PrimeIter {
@@ -184,7 +184,7 @@ impl std::iter::Iterator for PrimeIter {
     fn next(&mut self) -> Option<Self::Item> {
         let prime = PRIMES.get(self.next);
         self.next += 1;
-        return Some(prime);
+        prime.into()
     }
 }
 
@@ -236,7 +236,7 @@ impl PrimeFactorization {
                     factors: SmallVec::new(),
                     sign: 0,
                 }
-            }
+            },
             Ordering::Greater => 1,
             Ordering::Less => -1,
         };
@@ -312,7 +312,7 @@ impl PrimeFactorization {
         for (prime, &power) in primes().map(|p| p as f64).zip(&self.factors) {
             result *= prime.powi(power as i32);
         }
-        return result;
+        result
     }
 
     pub fn as_bigint(&self) -> BigInt {
@@ -320,7 +320,7 @@ impl PrimeFactorization {
         for (prime, &power) in primes().zip(&self.factors) {
             result *= BigInt::from(prime).pow(power as u32);
         }
-        return result;
+        result
     }
 }
 

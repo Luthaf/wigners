@@ -49,13 +49,13 @@ impl Rational {
     /// R is the rational.
     pub fn signed_root(&self) -> f64 {
         let value = self.as_f64();
-        return value.signum() * value.abs().sqrt();
+        value.signum() * value.abs().sqrt()
     }
 }
 
 impl<T> std::ops::MulAssign<T> for Rational
 where
-    T: Borrow<Rational>,
+    T: Borrow<Self>,
 {
     fn mul_assign(&mut self, rhs: T) {
         let rhs = rhs.borrow();
