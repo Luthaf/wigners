@@ -25,7 +25,12 @@ impl Rational {
     /// Divide both numerator and denominator by their greatest common divider
     /// in order to simplify the rational
     pub fn simplify(&mut self) {
-        for (num_factor, den_factor) in self.numerator.factors.iter_mut().zip(self.denominator.factors.iter_mut()) {
+        for (num_factor, den_factor) in self
+            .numerator
+            .factors
+            .iter_mut()
+            .zip(self.denominator.factors.iter_mut())
+        {
             let gcd = std::cmp::min(*num_factor, *den_factor);
             *num_factor -= gcd;
             *den_factor -= gcd;
@@ -48,7 +53,10 @@ impl Rational {
     }
 }
 
-impl<T> std::ops::MulAssign<T> for Rational where T: Borrow<Rational> {
+impl<T> std::ops::MulAssign<T> for Rational
+where
+    T: Borrow<Rational>,
+{
     fn mul_assign(&mut self, rhs: T) {
         let rhs = rhs.borrow();
         debug_assert_eq!(self.denominator.sign, 1);

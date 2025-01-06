@@ -11,7 +11,6 @@ use num_traits::ToPrimitive;
 use crate::primes::{factorial, PrimeFactorization};
 use crate::rational::Rational;
 
-
 // cache up to that many wigner_3j symbols in a LRU cache. 200_000 entries is
 // enough for our use case of computing all symbols up to `j_{1, 2, 3}=20`
 const WIGNER_3J_CACHE_SIZE: usize = 200_000;
@@ -24,14 +23,14 @@ lazy_static::lazy_static!(
 );
 
 #[no_mangle]
-pub extern fn clear_wigner_3j_cache() {
+pub extern "C" fn clear_wigner_3j_cache() {
     CACHED_WIGNER_3J.lock().clear();
 }
 
 /// Compute the Wigner 3j coefficient for the given `j1`, `j2`, `j2`, `m1`,
 /// `m2`, `m3`.
 #[no_mangle]
-pub extern fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> f64 {
+pub extern "C" fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> f64 {
     if m1.unsigned_abs() > j1 {
         panic!("invalid j1/m1 in wigner3j: {}/{}", j1, m1);
     } else if m2.unsigned_abs() > j2 {
@@ -85,7 +84,8 @@ pub extern fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) ->
     debug_assert!((beta2 - alpha2) >= 0);
     s2 *= factorial((beta2 - alpha2) as u32);
 
-    let (series_numerator, series_denominator) = compute_3j_series(total_j, beta1, beta2, beta3, alpha1, alpha2);
+    let (series_numerator, series_denominator) =
+        compute_3j_series(total_j, beta1, beta2, beta3, alpha1, alpha2);
 
     let numerator = s1.numerator * s2;
     let mut s = Rational::new(numerator, s1.denominator);
@@ -115,7 +115,7 @@ pub extern fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) ->
 /// <j1 m1 ; j2 m2 | j3 m3> = (-1)^(j1 - j2 + m3) sqrt(2*j3 + 1) wigner_3j(j1, j2, j3, m1, m2, -m3)
 /// ```
 #[no_mangle]
-pub extern fn clebsch_gordan(j1: u32, m1: i32, j2: u32, m2: i32, j3: u32, m3: i32) -> f64 {
+pub extern "C" fn clebsch_gordan(j1: u32, m1: i32, j2: u32, m2: i32, j3: u32, m3: i32) -> f64 {
     let mut w3j = wigner_3j(j1, j2, j3, m1, m2, -m3);
 
     w3j *= f64::sqrt((2 * j3 + 1) as f64);
@@ -125,7 +125,6 @@ pub extern fn clebsch_gordan(j1: u32, m1: i32, j2: u32, m2: i32, j3: u32, m3: i3
         return w3j;
     }
 }
-
 
 /// Compute the full array of Clebsch-Gordan coefficients for the three given
 /// `j`.
@@ -141,7 +140,8 @@ pub fn clebsch_gordan_array(j1: u32, j2: u32, j3: u32, output: &mut [f64]) {
     if output.len() != size {
         panic!(
             "invalid output size, expected to have space for {} entries, but got {}",
-            size, output.len()
+            size,
+            output.len()
         );
     }
 
@@ -157,7 +157,13 @@ pub fn clebsch_gordan_array(j1: u32, j2: u32, j3: u32, output: &mut [f64]) {
 
 /// Same function as `clebsch_gordan_array`, but can be called directly from C
 #[no_mangle]
-pub unsafe extern fn clebsch_gordan_array_c(j1: u32, j2: u32, j3: u32, data: *mut f64, len: u64) {
+pub unsafe extern "C" fn clebsch_gordan_array_c(
+    j1: u32,
+    j2: u32,
+    j3: u32,
+    data: *mut f64,
+    len: u64,
+) {
     let slice = std::slice::from_raw_parts_mut(data, len as usize);
     clebsch_gordan_array(j1, j2, j3, slice);
 }
@@ -168,7 +174,15 @@ fn triangle_condition(j1: u32, j2: u32, j3: u32) -> bool {
 }
 
 // reorder j1/m1, j2/m2, j3/m3 such that j1 >= j2 >= j3 and m1 >= 0 or m1 == 0 && m2 >= 0
-fn reorder3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32, mut sign: f64) -> (u32, u32, u32, i32, i32, i32, f64) {
+fn reorder3j(
+    j1: u32,
+    j2: u32,
+    j3: u32,
+    m1: i32,
+    m2: i32,
+    m3: i32,
+    mut sign: f64,
+) -> (u32, u32, u32, i32, i32, i32, f64) {
     if j1 < j2 {
         return reorder3j(j2, j1, j3, m2, m1, m3, -sign);
     } else if j2 < j3 {
@@ -205,7 +219,14 @@ fn min(a: i32, b: i32, c: i32) -> i32 {
 }
 
 /// compute the sum appearing in the 3j symbol
-fn compute_3j_series(total_j: u32, beta1: i32, beta2: i32, beta3: i32, alpha1: i32, alpha2: i32) -> (f64, PrimeFactorization) {
+fn compute_3j_series(
+    total_j: u32,
+    beta1: i32,
+    beta2: i32,
+    beta3: i32,
+    alpha1: i32,
+    alpha2: i32,
+) -> (f64, PrimeFactorization) {
     let range = max(alpha1, alpha2, 0)..(min(beta1, beta2, beta3) + 1);
 
     let mut numerators = Vec::with_capacity(range.len());
@@ -265,11 +286,11 @@ fn compute_3j_series(total_j: u32, beta1: i32, beta2: i32, beta3: i32, alpha1: i
 /// denominator
 fn common_denominator(
     numerators: &mut [PrimeFactorization],
-    denominators: &[PrimeFactorization]
+    denominators: &[PrimeFactorization],
 ) -> PrimeFactorization {
     debug_assert_eq!(numerators.len(), denominators.len());
     if denominators.is_empty() {
-        return PrimeFactorization::one()
+        return PrimeFactorization::one();
     }
 
     let mut denominator = denominators[0].clone();
@@ -299,7 +320,10 @@ mod tests {
         assert_ulps_eq!(wigner_3j(2, 6, 4, 0, 0, 0), f64::sqrt(715.0) / 143.0);
         assert_ulps_eq!(wigner_3j(5, 3, 2, -3, 3, 0), f64::sqrt(330.0) / 165.0);
         assert_ulps_eq!(wigner_3j(5, 3, 2, -2, 3, -1), -f64::sqrt(330.0) / 330.0);
-        assert_ulps_eq!(wigner_3j(100, 100, 100, 100, -100, 0), 2.689688852311291e-13);
+        assert_ulps_eq!(
+            wigner_3j(100, 100, 100, 100, -100, 0),
+            2.689688852311291e-13
+        );
 
         assert_ulps_eq!(wigner_3j(0, 1, 1, 0, 0, 0), -0.5773502691896257);
 

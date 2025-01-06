@@ -1,7 +1,6 @@
-use std::path::Path;
 use std::fs::File;
 use std::io::Read;
-
+use std::path::Path;
 
 fn list_cxx_libs(build: &Path) {
     let mut dirs_file = File::open(build.join("cxx_link_dirs.cmake")).unwrap();

@@ -2,11 +2,12 @@ use std::borrow::Borrow;
 use std::cmp::Ordering;
 use std::sync::RwLock;
 
-use smallvec::SmallVec;
 use num_bigint::BigInt;
+use smallvec::SmallVec;
 
 /// Store the first 1000 primes, to be used for fast prime decomposition of
 /// factorial
+#[rustfmt::skip]
 static FIRST_PRIMES: [u32; 1000] = [
        2,    3,    5,    7,   11,   13,   17,   19,   23,   29,
       31,   37,   41,   43,   47,   53,   59,   61,   67,   71,
@@ -122,13 +123,13 @@ impl Primes {
     fn new() -> Primes {
         return Primes {
             extra_primes: RwLock::new(vec![7927]),
-        }
+        };
     }
 
     /// Get the `nth` prime
     fn get(&self, nth: usize) -> u32 {
         if nth < FIRST_PRIMES.len() {
-            return FIRST_PRIMES[nth]
+            return FIRST_PRIMES[nth];
         }
 
         let nth = nth - FIRST_PRIMES.len();
@@ -169,12 +170,12 @@ lazy_static::lazy_static!(
 
 /// Iterator over the global prime list
 struct PrimeIter {
-    next: usize
+    next: usize,
 }
 
 /// Get an iterator over prime numbers. This iterator have infinite size!
 fn primes() -> PrimeIter {
-    return PrimeIter { next: 0 }
+    return PrimeIter { next: 0 };
 }
 
 impl std::iter::Iterator for PrimeIter {
@@ -262,9 +263,7 @@ impl PrimeFactorization {
             }
         }
 
-        return PrimeFactorization {
-            sign, factors
-        };
+        return PrimeFactorization { sign, factors };
     }
 
     /// Get the prime factorization of 1
@@ -325,7 +324,10 @@ impl PrimeFactorization {
     }
 }
 
-impl<T> std::ops::MulAssign<T> for PrimeFactorization where T: Borrow<PrimeFactorization> {
+impl<T> std::ops::MulAssign<T> for PrimeFactorization
+where
+    T: Borrow<PrimeFactorization>,
+{
     fn mul_assign(&mut self, rhs: T) {
         let rhs = rhs.borrow();
         self.sign *= rhs.sign;
@@ -354,7 +356,10 @@ impl std::ops::Mul for PrimeFactorization {
     }
 }
 
-impl<T> std::ops::DivAssign<T> for PrimeFactorization where T: Borrow<PrimeFactorization> {
+impl<T> std::ops::DivAssign<T> for PrimeFactorization
+where
+    T: Borrow<PrimeFactorization>,
+{
     fn div_assign(&mut self, rhs: T) {
         let rhs = rhs.borrow();
         if rhs.sign == 0 {
@@ -412,7 +417,7 @@ pub fn factorial(n: u32) -> PrimeFactorization {
     }
 }
 
-fn compute_factorial(n : u32) -> PrimeFactorization {
+fn compute_factorial(n: u32) -> PrimeFactorization {
     // inspired by https://janmr.com/blog/2010/10/prime-factors-of-factorial-numbers/
     let mut factors = SmallVec::new();
     for prime in primes() {
@@ -424,7 +429,10 @@ fn compute_factorial(n : u32) -> PrimeFactorization {
         let mut prime_pow = prime;
         loop {
             if prime_pow > n {
-                assert!(factor <= u16::MAX as u32, "factorial requires a prime factor too big for this implementation");
+                assert!(
+                    factor <= u16::MAX as u32,
+                    "factorial requires a prime factor too big for this implementation"
+                );
                 // we will find no more factors for this prime
                 factors.push(factor as u16);
                 break;
@@ -437,7 +445,7 @@ fn compute_factorial(n : u32) -> PrimeFactorization {
 
     return PrimeFactorization {
         sign: 1,
-        factors: factors
+        factors: factors,
     };
 }
 
@@ -496,8 +504,14 @@ mod tests {
         let five = PrimeFactorization::new(5);
         let m_twenty = PrimeFactorization::new(-20);
 
-        assert_eq!(five.clone() * m_twenty.clone(), PrimeFactorization::new(-100));
-        assert_eq!(m_twenty.clone() * five.clone(), PrimeFactorization::new(-100));
+        assert_eq!(
+            five.clone() * m_twenty.clone(),
+            PrimeFactorization::new(-100)
+        );
+        assert_eq!(
+            m_twenty.clone() * five.clone(),
+            PrimeFactorization::new(-100)
+        );
 
         // 0 x whatever is zero
         assert_eq!(zero.clone() * one.clone(), zero);
@@ -512,10 +526,22 @@ mod tests {
         assert_eq!(m_twenty.clone() * one.clone(), m_twenty);
 
         // a few sign tests
-        assert_eq!(PrimeFactorization::new(-2) * PrimeFactorization::new(-2), PrimeFactorization::new(4));
-        assert_eq!(PrimeFactorization::new(-2) * PrimeFactorization::new(2), PrimeFactorization::new(-4));
-        assert_eq!(PrimeFactorization::new(2) * PrimeFactorization::new(2), PrimeFactorization::new(4));
-        assert_eq!(PrimeFactorization::new(2) * PrimeFactorization::new(-2), PrimeFactorization::new(-4));
+        assert_eq!(
+            PrimeFactorization::new(-2) * PrimeFactorization::new(-2),
+            PrimeFactorization::new(4)
+        );
+        assert_eq!(
+            PrimeFactorization::new(-2) * PrimeFactorization::new(2),
+            PrimeFactorization::new(-4)
+        );
+        assert_eq!(
+            PrimeFactorization::new(2) * PrimeFactorization::new(2),
+            PrimeFactorization::new(4)
+        );
+        assert_eq!(
+            PrimeFactorization::new(2) * PrimeFactorization::new(-2),
+            PrimeFactorization::new(-4)
+        );
     }
 
     #[test]
@@ -536,10 +562,22 @@ mod tests {
         assert_eq!(m_twenty.clone() / one.clone(), m_twenty);
 
         // a few sign tests
-        assert_eq!(PrimeFactorization::new(-2) / PrimeFactorization::new(-2), PrimeFactorization::new(1));
-        assert_eq!(PrimeFactorization::new(-2) / PrimeFactorization::new(2), PrimeFactorization::new(-1));
-        assert_eq!(PrimeFactorization::new(2) / PrimeFactorization::new(2), PrimeFactorization::new(1));
-        assert_eq!(PrimeFactorization::new(2) / PrimeFactorization::new(-2), PrimeFactorization::new(-1));
+        assert_eq!(
+            PrimeFactorization::new(-2) / PrimeFactorization::new(-2),
+            PrimeFactorization::new(1)
+        );
+        assert_eq!(
+            PrimeFactorization::new(-2) / PrimeFactorization::new(2),
+            PrimeFactorization::new(-1)
+        );
+        assert_eq!(
+            PrimeFactorization::new(2) / PrimeFactorization::new(2),
+            PrimeFactorization::new(1)
+        );
+        assert_eq!(
+            PrimeFactorization::new(2) / PrimeFactorization::new(-2),
+            PrimeFactorization::new(-1)
+        );
     }
 
     #[test]
@@ -558,10 +596,12 @@ mod tests {
     fn test_factorial() {
         let factorial_200 = factorial(200);
         // checked with wolfram alpha
-        assert_eq!(factorial_200.factors.as_slice(), [
-            197, 97, 49, 32, 19, 16, 11, 10, 8, 6, 6, 5, 4, 4, 4, 3, 3, 3, 2, 2,
-            2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1
-        ])
+        assert_eq!(
+            factorial_200.factors.as_slice(),
+            [
+                197, 97, 49, 32, 19, 16, 11, 10, 8, 6, 6, 5, 4, 4, 4, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2,
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+            ]
+        )
     }
 }
