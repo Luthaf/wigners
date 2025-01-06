@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 
 use wigners::wigner_3j;
 
-use criterion::{Criterion, criterion_group, criterion_main};
+use criterion::{criterion_group, criterion_main, Criterion};
 
 fn compute_all_wigner_3j(max_angular: i32) {
     for l1 in 0..=max_angular {
@@ -38,7 +38,7 @@ fn bench_wigner3j(c: &mut Criterion) {
     group.sampling_mode(criterion::SamplingMode::Flat);
     group.warm_up_time(Duration::from_secs(1));
 
-    for &max_angular in &[4, 8, 12,16, 20] {
+    for &max_angular in &[4, 8, 12, 16, 20] {
         group.bench_function(&format!("max_angular={}", max_angular), |b| {
             b.iter_custom(|n_iters| {
                 let mut duration = Duration::new(0, 0);
@@ -52,7 +52,7 @@ fn bench_wigner3j(c: &mut Criterion) {
                     duration += start.elapsed();
                 }
 
-                return duration
+                return duration;
             })
         });
     }
@@ -70,7 +70,7 @@ fn bench_wigner3j(c: &mut Criterion) {
                 duration += start.elapsed();
             }
 
-            return duration
+            return duration;
         })
     });
 

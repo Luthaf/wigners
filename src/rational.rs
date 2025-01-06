@@ -13,20 +13,25 @@ pub struct Rational {
 
 impl Rational {
     /// Create a new `Rational` with the given `numerator` and `denominator`
-    pub fn new(mut numerator: PrimeFactorization, mut denominator: PrimeFactorization) -> Rational {
+    pub fn new(mut numerator: PrimeFactorization, mut denominator: PrimeFactorization) -> Self {
         numerator.sign *= denominator.sign;
         denominator.sign = 1;
-        return Rational {
+        Self {
             numerator,
             denominator,
-        };
+        }
     }
 
     /// Divide both numerator and denominator by their greatest common divider
     /// in order to simplify the rational
     pub fn simplify(&mut self) {
-        for (num_factor, den_factor) in self.numerator.factors.iter_mut().zip(self.denominator.factors.iter_mut()) {
-            let gcd = std::cmp::min(*num_factor, *den_factor);
+        for (num_factor, den_factor) in self
+            .numerator
+            .factors
+            .iter_mut()
+            .zip(self.denominator.factors.iter_mut())
+        {
+            let gcd = *num_factor.min(den_factor);
             *num_factor -= gcd;
             *den_factor -= gcd;
         }
@@ -44,11 +49,14 @@ impl Rational {
     /// R is the rational.
     pub fn signed_root(&self) -> f64 {
         let value = self.as_f64();
-        return value.signum() * value.abs().sqrt();
+        value.signum() * value.abs().sqrt()
     }
 }
 
-impl<T> std::ops::MulAssign<T> for Rational where T: Borrow<Rational> {
+impl<T> std::ops::MulAssign<T> for Rational
+where
+    T: Borrow<Self>,
+{
     fn mul_assign(&mut self, rhs: T) {
         let rhs = rhs.borrow();
         debug_assert_eq!(self.denominator.sign, 1);
