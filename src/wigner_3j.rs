@@ -24,14 +24,14 @@ lazy_static::lazy_static!(
 );
 
 #[no_mangle]
-pub extern fn clear_wigner_3j_cache() {
+pub extern "C" fn clear_wigner_3j_cache() {
     CACHED_WIGNER_3J.lock().clear();
 }
 
 /// Compute the Wigner 3j coefficient for the given `j1`, `j2`, `j2`, `m1`,
 /// `m2`, `m3`.
 #[no_mangle]
-pub extern fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> f64 {
+pub extern "C" fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> f64 {
     if m1.unsigned_abs() > j1 {
         panic!("invalid j1/m1 in wigner3j: {}/{}", j1, m1);
     } else if m2.unsigned_abs() > j2 {
@@ -115,7 +115,7 @@ pub extern fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) ->
 /// <j1 m1 ; j2 m2 | j3 m3> = (-1)^(j1 - j2 + m3) sqrt(2*j3 + 1) wigner_3j(j1, j2, j3, m1, m2, -m3)
 /// ```
 #[no_mangle]
-pub extern fn clebsch_gordan(j1: u32, m1: i32, j2: u32, m2: i32, j3: u32, m3: i32) -> f64 {
+pub extern "C" fn clebsch_gordan(j1: u32, m1: i32, j2: u32, m2: i32, j3: u32, m3: i32) -> f64 {
     let mut w3j = wigner_3j(j1, j2, j3, m1, m2, -m3);
 
     w3j *= f64::sqrt((2 * j3 + 1) as f64);
@@ -157,7 +157,7 @@ pub fn clebsch_gordan_array(j1: u32, j2: u32, j3: u32, output: &mut [f64]) {
 
 /// Same function as `clebsch_gordan_array`, but can be called directly from C
 #[no_mangle]
-pub unsafe extern fn clebsch_gordan_array_c(j1: u32, j2: u32, j3: u32, data: *mut f64, len: u64) {
+pub unsafe extern "C" fn clebsch_gordan_array_c(j1: u32, j2: u32, j3: u32, data: *mut f64, len: u64) {
     let slice = std::slice::from_raw_parts_mut(data, len as usize);
     clebsch_gordan_array(j1, j2, j3, slice);
 }
