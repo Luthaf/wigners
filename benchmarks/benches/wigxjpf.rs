@@ -49,7 +49,7 @@ fn bench_wigner3j(c: &mut Criterion) {
     group.sampling_mode(criterion::SamplingMode::Flat);
 
     for &max_angular in &[4, 8, 12, 16, 20] {
-        group.bench_function(&format!("max_angular={}", max_angular), |b| {
+        group.bench_function(format!("max_angular={}", max_angular), |b| {
             b.iter_custom(|n_iters| {
                 let mut duration = Duration::new(0, 0);
                 for _ in 0..n_iters {
