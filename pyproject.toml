@@ -1,9 +1,45 @@
+[project]
+name = "wigners"
+requires-python = ">=3.9"
+dynamic = ["version"]
+
+license = "Apache-2.0 OR MIT"
+authors = [
+    {name = "Guillaume Fraux", email = "guillaume.fraux@epfl.ch"},
+]
+description = "Compute Wigner 3j and Clebsch-Gordan coefficients"
+
+keywords = ["clebsch-gordan", "wigner"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+
+dependencies = ["numpy"]
+
+[project.urls]
+homepage = "https://github.com/Luthaf/wigners"
+repository = "https://github.com/Luthaf/wigners"
+
+### ======================================================================== ###
+
 [build-system]
 requires = [
-    "setuptools >=44",
-    "wheel >=0.36",
+    "setuptools >=77",
+    "wheel",
+    "packaging",
 ]
-build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ["python"]
+
+### ======================================================================== ###
 
 [tool.tox]
 legacy_tox_ini = """

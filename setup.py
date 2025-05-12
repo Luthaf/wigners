@@ -8,9 +8,6 @@ from wheel.bdist_wheel import bdist_wheel
 
 ROOT = os.path.realpath(os.path.dirname(__file__))
 
-if sys.version_info < (3, 6):
-    sys.exit("Sorry, Python < 3.6 is not supported")
-
 if "--rust-target" in sys.argv:
     index = sys.argv.index("--rust-target")
     RUST_TARGET = sys.argv[index + 1]
