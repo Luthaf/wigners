@@ -7,6 +7,8 @@ license = "Apache-2.0 OR MIT"
 authors = [
     {name = "Guillaume Fraux", email = "guillaume.fraux@epfl.ch"},
 ]
+
+readme = "README.md"
 description = "Compute Wigner 3j and Clebsch-Gordan coefficients"
 
 keywords = ["clebsch-gordan", "wigner"]
