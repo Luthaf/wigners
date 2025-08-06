@@ -163,7 +163,7 @@ pub unsafe extern "C" fn clebsch_gordan_array_c(j1: u32, j2: u32, j3: u32, data:
 }
 
 /// check the triangle condition on j1, j2, j3, i.e. `|j1 - j2| <= j3 <= j1 + j2`
-fn triangle_condition(j1: u32, j2: u32, j3: u32) -> bool {
+pub(crate) fn triangle_condition(j1: u32, j2: u32, j3: u32) -> bool {
     return (j3 <= j1 + j2) && (j1 <= j2 + j3) && (j2 <= j3 + j1);
 }
 
@@ -196,16 +196,16 @@ fn triangle_coefficient(j1: u32, j2: u32, j3: u32) -> Rational {
     return result;
 }
 
-fn max(a: i32, b: i32, c: i32) -> i32 {
+pub(crate) fn max(a: i32, b: i32, c: i32) -> i32 {
     std::cmp::max(a, std::cmp::max(b, c))
 }
 
-fn min(a: i32, b: i32, c: i32) -> i32 {
+pub(crate) fn min(a: i32, b: i32, c: i32) -> i32 {
     std::cmp::min(a, std::cmp::min(b, c))
 }
 
 /// compute the sum appearing in the 3j symbol
-fn compute_3j_series(total_j: u32, beta1: i32, beta2: i32, beta3: i32, alpha1: i32, alpha2: i32) -> (f64, PrimeFactorization) {
+pub(crate) fn compute_3j_series(total_j: u32, beta1: i32, beta2: i32, beta3: i32, alpha1: i32, alpha2: i32) -> (f64, PrimeFactorization) {
     let range = max(alpha1, alpha2, 0)..(min(beta1, beta2, beta3) + 1);
 
     let mut numerators = Vec::with_capacity(range.len());
@@ -263,7 +263,7 @@ fn compute_3j_series(total_j: u32, beta1: i32, beta2: i32, beta3: i32, alpha1: i
 /// Given a list of numerators and denominators, compute the common denominator
 /// and the rescaled numerator, putting all fractions at the same common
 /// denominator
-fn common_denominator(
+pub(crate) fn common_denominator(
     numerators: &mut [PrimeFactorization],
     denominators: &[PrimeFactorization]
 ) -> PrimeFactorization {
