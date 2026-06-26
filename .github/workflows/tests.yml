@@ -42,3 +42,8 @@ jobs:
         run: |
           cd benchmarks
           cargo bench -- --test
+
+      - name: run Python tests
+        run: |
+          pip install tox
+          tox

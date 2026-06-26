@@ -1,6 +1,6 @@
 [project]
 name = "wigners"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dynamic = ["version"]
 
 license = "Apache-2.0 OR MIT"
@@ -41,17 +41,20 @@ zip-safe = false
 [tool.setuptools.packages.find]
 where = ["python"]
 
+[tool.setuptools.package-data]
+wigners = ["_wigners.so"]
+
+### ======================================================================== ###
+
+[tool.pytest.ini_options]
+testpaths = ["python/tests"]
+python_files = ["*.py"]
+
 ### ======================================================================== ###
 
 [tool.tox]
-legacy_tox_ini = """
-[tox]
+environments = []
 
-[testenv]
-deps =
-    discover
-    numpy
-
-commands =
-    discover -p "*.py" -s python/tests
-"""
+[tool.tox.env_run_base]
+deps = ["pytest", "numpy"]
+commands = [["pytest"]]
