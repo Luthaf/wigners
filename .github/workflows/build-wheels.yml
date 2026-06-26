@@ -15,19 +15,19 @@ jobs:
       matrix:
         include:
           - name: x86_64 Linux
-            os: ubuntu-22.04
+            os: ubuntu-24.04
             rust-target: x86_64-unknown-linux-gnu
             cibw-arch: x86_64
           - name: arm64 Linux
-            os: ubuntu-22.04-arm
+            os: ubuntu-24.04-arm
             rust-target: aarch64-unknown-linux-gnu
             cibw-arch: aarch64
           - name: x86_64 macOS
-            os: macos-13
+            os: macos-15-intel
             rust-target: x86_64-apple-darwin
             cibw-arch: x86_64
           - name: M1 macOS
-            os: macos-14
+            os: macos-15
             rust-target: aarch64-apple-darwin
             cibw-arch: arm64
           - name: x86_64 Windows
@@ -35,7 +35,7 @@ jobs:
             rust-target: x86_64-pc-windows-msvc
             cibw-arch: AMD64
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -46,7 +46,7 @@ jobs:
           target: ${{ matrix.rust-target }}
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13"
 
@@ -54,7 +54,7 @@ jobs:
         run: python -m pip install cibuildwheel twine
 
       - name: build manylinux with rust docker image
-        if: matrix.os == 'ubuntu-22.04' || matrix.os == 'ubuntu-22.04-arm'
+        if: matrix.os == 'ubuntu-24.04' || matrix.os == 'ubuntu-24.04-arm'
         run: docker build -t rustc-manylinux2014_${{ matrix.cibw-arch }} python/scripts/rustc-manylinux2014_${{ matrix.cibw-arch }}
 
       - name: build wheel
@@ -69,25 +69,25 @@ jobs:
           CIBW_ENVIRONMENT: >
             MACOSX_DEPLOYMENT_TARGET=11
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: wheel-${{ matrix.os }}-${{ matrix.cibw-arch }}
           path: ./wheelhouse/*.whl
 
   build-sdist:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: sdist
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: 3.13
       - name: build sdist
         run: |
           pip install build
           python -m build --sdist .
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: sdist
           path: dist/*.tar.gz
@@ -95,26 +95,26 @@ jobs:
   merge-and-release:
     name: Merge and release wheels/sdists
     needs: [build-wheels, build-sdist]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
       pull-requests: write
     steps:
       - name: Download wheels
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: wheels
           pattern: wheel-*
           merge-multiple: true
 
       - name: Download sdist
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: wheels
           name: sdist
 
       - name: Re-upload a single wheels artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wheels
           path: |
@@ -129,7 +129,7 @@ jobs:
 
       - name: upload to GitHub release
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             wheels/wigners-*
