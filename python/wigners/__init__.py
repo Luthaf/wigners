@@ -36,6 +36,17 @@ __lib.clebsch_gordan_array_c.argtypes = [
 __lib.clebsch_gordan_array_c.restype = None
 
 
+__lib.wigner_D_array_c.argtypes = [
+    ctypes.c_uint32,
+    ctypes.c_double,
+    ctypes.c_double,
+    ctypes.c_double,
+    ctypes.POINTER(ctypes.c_double),
+    ctypes.c_uint64,
+]
+__lib.wigner_D_array_c.restype = None
+
+
 __lib.clear_wigner_3j_cache.argtypes = []
 __lib.clear_wigner_3j_cache.restype = None
 
@@ -75,6 +86,47 @@ def clebsch_gordan_array(j1: int, j2: int, j3: int) -> np.ndarray:
     ptr = array.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
     __lib.clebsch_gordan_array_c(j1, j2, j3, ptr, array.size)
     return array
+
+
+def _total_d_complex_count(max_j: int) -> int:
+    """Total number of complex D-matrix elements for all j in [0, max_j]."""
+    return (max_j + 1) * (2 * max_j + 1) * (2 * max_j + 3) // 3
+
+
+def wigner_D_array(
+    max_j: int, alpha: float, beta: float, gamma: float
+) -> list[np.ndarray]:
+    """
+    Compute the full complex Wigner D matrices for all j in ``[0, max_j]``
+    using ZYZ Euler angles.
+
+    Returns a list of ``(2*j+1, 2*j+1)`` complex128 matrices, ordered by
+    increasing j. Each matrix is indexed as ``D[mp + j, m + j]`` where
+    ``mp`` is the row index (first Euler angle) and ``m`` is the column index
+    (third Euler angle).
+
+    The convention is:
+        D^j_{mp,m}(alpha, beta, gamma) = <j, mp| exp(-i Jz alpha)
+            exp(-i Jy beta) exp(-i Jz gamma) |j, m>
+    """
+    total_complex = _total_d_complex_count(max_j)
+    total_doubles = 2 * total_complex
+
+    out = np.zeros(total_doubles, dtype=np.float64)
+    ptr = out.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+    __lib.wigner_D_array_c(max_j, alpha, beta, gamma, ptr, total_doubles)
+
+    # View as complex128 (interleaved real/imag)
+    out = out.view(np.complex128)
+
+    # Split into per-j matrices
+    matrices = []
+    idx = 0
+    for j in range(max_j + 1):
+        size = (2 * j + 1) ** 2
+        matrices.append(out[idx : idx + size].reshape(2 * j + 1, 2 * j + 1))
+        idx += size
+    return matrices
 
 
 def clear_wigner_3j_cache():

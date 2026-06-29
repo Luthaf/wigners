@@ -1,9 +1,11 @@
+import math
 import random
 import time
 
 import numpy as np
 
 from sympy.physics.wigner import wigner_3j as sympy_wigner_3j
+from sympy.physics.wigner import wigner_d as sympy_wigner_d
 
 import wigners
 
@@ -57,3 +59,26 @@ def test_random_large_j():
         j3 = random.randint(30, 500)
         m1, m2, m3 = _get_m(j1, j2, j3)
         _check_j(j1, j2, j3, m1, m2, m3)
+
+
+def test_wigner_d_against_sympy():
+    for j in range(0, 6):
+        alpha, beta, gamma = 0.2 * j + 0.1, 0.3 * j + 0.5, 0.4 * j + 0.2
+        our = wigners.wigner_D_array(j, alpha, beta, gamma)[j]
+        sympy_D = sympy_wigner_d(j, float(alpha), float(beta), float(gamma))
+        sympy_np = np.array(sympy_D.tolist(), dtype=np.complex128)
+        assert np.allclose(our, sympy_np, atol=1e-10), (
+            f"failed for j={j}, alpha={alpha}, beta={beta}, gamma={gamma}"
+        )
+
+    for _ in range(20):
+        j = random.randint(0, 8)
+        alpha = random.uniform(0, 2 * math.pi)
+        beta = random.uniform(0, math.pi)
+        gamma = random.uniform(0, 2 * math.pi)
+        our = wigners.wigner_D_array(j, alpha, beta, gamma)[j]
+        sympy_D = sympy_wigner_d(j, alpha, beta, gamma)
+        sympy_np = np.array(sympy_D.tolist(), dtype=np.complex128)
+        assert np.allclose(our, sympy_np, atol=1e-10), (
+            f"failed for j={j}, alpha={alpha}, beta={beta}, gamma={gamma}"
+        )

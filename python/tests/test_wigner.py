@@ -38,3 +38,56 @@ def test_clebsch_gordan_array():
                 )
 
     assert np.allclose(wigners.clebsch_gordan_array(j1, j2, j3), expected)
+
+
+def test_wigner_d_identity():
+    """D(0,0,0) should be the identity matrix for all ell."""
+    matrices = wigners.wigner_D_array(4, 0.0, 0.0, 0.0)
+    for ell, matrix in enumerate(matrices):
+        assert np.allclose(matrix, np.eye(2 * ell + 1, dtype=np.complex128))
+
+
+def test_wigner_d_unitarity():
+    """D * D^dagger = I for all ell."""
+    matrices = wigners.wigner_D_array(4, 0.3, 0.7, 1.2)
+    for ell, matrix in enumerate(matrices):
+        identity = matrix @ matrix.conj().T
+        assert np.allclose(
+            identity, np.eye(2 * ell + 1, dtype=np.complex128), atol=1e-10
+        )
+
+
+def test_wigner_d_beta_zero():
+    """D(alpha, 0, gamma) should be diagonal: exp(-i*m*(alpha+gamma))."""
+    alpha, gamma = 0.3, 0.7
+    matrices = wigners.wigner_D_array(3, alpha, 0.0, gamma)
+    for ell, matrix in enumerate(matrices):
+        for mp_idx in range(2 * ell + 1):
+            for m_idx in range(2 * ell + 1):
+                if mp_idx == m_idx:
+                    m = mp_idx - ell
+                    expected = np.exp(-1j * m * (alpha + gamma))
+                    assert np.isclose(matrix[mp_idx, m_idx], expected, atol=1e-12)
+                else:
+                    assert np.isclose(matrix[mp_idx, m_idx], 0.0, atol=1e-12)
+
+
+def test_wigner_d_alpha_gamma_zero():
+    """D(0, beta, 0) should be real (the small d-matrix)."""
+    matrices = wigners.wigner_D_array(3, 0.0, 0.5, 0.0)
+    for matrix in matrices:
+        assert np.allclose(matrix.imag, 0.0, atol=1e-14)
+
+
+def test_wigner_d_j0():
+    """D^0 is always 1."""
+    for _ in range(5):
+        import random
+
+        matrices = wigners.wigner_D_array(
+            0, random.random(), random.random(), random.random()
+        )
+        assert np.isclose(matrices[0], 1.0)
+
+
+

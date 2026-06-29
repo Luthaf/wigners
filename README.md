@@ -1,12 +1,22 @@
 # Calculation of Wigner symbols and related constants
 
-This package computes Wigner 3j coefficients and Clebsch-Gordan coefficients in
-pure Rust. The calculation is based on the prime factorization of the different
-factorials involved in the coefficients, keeping the values in a rational root
-form (`sign * \sqrt{s / n}`) for as long as possible. This idea for the
-algorithm is described in:
+This package computes Wigner 3j coefficients, Clebsch-Gordan coefficients, and
+complex Wigner D-matrices in pure Rust. The 3j/CG calculation is based on the
+prime factorization of the different factorials involved in the coefficients,
+keeping the values in a rational root form (`sign * \sqrt{s / n}`) for as long
+as possible. The Wigner D-matrix uses the Risbo/Trapani-Navaza recurrence to
+compute all matrices for `j` from 0 to `j_max` simultaneously.
+
+Wigner 3j / Clebsch-Gordan algorithm:
 
 [H. T. Johansson and C. Forssén, SIAM Journal on Scientific Compututing 38 (2016) 376-384](https://doi.org/10.1137/15M1021908)
+
+Wigner D-matrix algorithm:
+
+- T. Risbo, "Fourier-transform summation of Legendre series by D-matrix
+  transform", https://doi.org/10.1007/BF01090814
+- S. Trapani & J. Navaza, "Calculation of spherical harmonics and Wigner d
+  functions by FFT.", https://doi.org/10.1107/S0108767306017478
 
 This implementation takes a lot of inspiration from the
 [WignerSymbols](https://github.com/Jutho/WignerSymbols.jl/) Julia implementation
@@ -36,6 +46,10 @@ cg_array = wigners.clebsch_gordan_array(ji, j2, j3)
 # we have an internal cache for recently computed CG coefficients, if you
 # need to clean it up you can use this function
 wigners.clear_wigner_3j_cache()
+
+# Wigner D matrices for all j up to max_j, using ZYZ Euler angles
+matrices = wigners.wigner_D_array(max_j, alpha, beta, gamma)
+# matrices[j] is a (2*j+1) x (2*j+1) complex128 matrix
 ```
 
 ### From rust
@@ -54,6 +68,10 @@ let w3j = wigners::wigner_3j(j1, j2, j3, m1, m2, m3);
 let cg = wigners::clebsch_gordan(j1, m1, j2, m1, j3, m3);
 
 wigners::clear_wigner_3j_cache();
+
+// Wigner D matrices for all j up to max_j, using ZYZ Euler angles
+let mut output = vec![0.0; 2 * total_d_matrix_size(max_j)];
+wigners::wigner_d_array(max_j, alpha, beta, gamma, &mut output);
 ```
 
 ## Limitations
@@ -64,6 +82,10 @@ since that's the only part I need for my own work.
 6j and 9j symbols can also be computed with this approach; and support for
 half-integers should be feasible as well. I'm open to pull-request implementing
 these!
+
+The Wigner D-matrix implementation uses the ZYZ convention and only supports
+full-integer `j` (no half-integers). It is limited to `j ≤ 100` for numerical
+stability of the recurrence.
 
 ## Benchmarks
 

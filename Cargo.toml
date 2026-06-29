@@ -24,6 +24,7 @@ lru = "0.14"
 rayon = "1"
 num-bigint = "0.4"
 num-traits = "0.2"
+num-complex = "0.4"
 
 # Pins for compatibility with rustc 1.74
 rayon-core = "=1.12"
