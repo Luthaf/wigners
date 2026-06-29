@@ -168,12 +168,12 @@ lazy_static::lazy_static!(
 );
 
 /// Iterator over the global prime list
-struct PrimeIter {
+pub(crate) struct PrimeIter {
     next: usize
 }
 
 /// Get an iterator over prime numbers. This iterator have infinite size!
-fn primes() -> PrimeIter {
+pub(crate) fn primes() -> PrimeIter {
     return PrimeIter { next: 0 }
 }
 

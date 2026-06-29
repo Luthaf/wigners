@@ -6,7 +6,6 @@ use lru::LruCache;
 use rayon::prelude::*;
 
 use num_bigint::BigInt;
-use num_traits::ToPrimitive;
 
 use crate::primes::{factorial, PrimeFactorization};
 use crate::rational::Rational;
@@ -85,7 +84,7 @@ pub extern "C" fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32
     debug_assert!((beta2 - alpha2) >= 0);
     s2 *= factorial((beta2 - alpha2) as u32);
 
-    let (series_numerator, series_denominator) = compute_3j_series(total_j, beta1, beta2, beta3, alpha1, alpha2);
+    let (series_sum, series_denominator) = compute_3j_series(total_j, beta1, beta2, beta3, alpha1, alpha2);
 
     let numerator = s1.numerator * s2;
     let mut s = Rational::new(numerator, s1.denominator);
@@ -98,7 +97,10 @@ pub extern "C" fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32
     s *= &series_denominator;
     s.simplify();
 
-    let result = series_numerator * s.signed_root();
+    let result = match series_sum {
+        SeriesSum::Small(series_numerator) => series_numerator * s.signed_root(),
+        SeriesSum::Large(series_numerator) => s.signed_sqrt(&series_numerator),
+    };
 
     {
         let mut cache = CACHED_WIGNER_3J.lock();
@@ -204,8 +206,13 @@ fn min(a: i32, b: i32, c: i32) -> i32 {
     std::cmp::min(a, std::cmp::min(b, c))
 }
 
+enum SeriesSum {
+    Small(f64),
+    Large(BigInt),
+}
+
 /// compute the sum appearing in the 3j symbol
-fn compute_3j_series(total_j: u32, beta1: i32, beta2: i32, beta3: i32, alpha1: i32, alpha2: i32) -> (f64, PrimeFactorization) {
+fn compute_3j_series(total_j: u32, beta1: i32, beta2: i32, beta3: i32, alpha1: i32, alpha2: i32) -> (SeriesSum, PrimeFactorization) {
     let range = max(alpha1, alpha2, 0)..(min(beta1, beta2, beta3) + 1);
 
     let mut numerators = Vec::with_capacity(range.len());
@@ -241,23 +248,19 @@ fn compute_3j_series(total_j: u32, beta1: i32, beta2: i32, beta3: i32, alpha1: i
 
     let denominator = common_denominator(&mut numerators, &denominators);
 
-    let numerator = if total_j > 100 {
-        // For large total J, we will overflow f64 in this sum, but performing
-        // the sum with big integers is enough to recover the full precision
+    if total_j <= 100 {
+        let mut numerator = 0.0;
+        for num in &numerators {
+            numerator += num.as_f64();
+        }
+        return (SeriesSum::Small(numerator), denominator);
+    } else {
         let mut numerator = BigInt::from(0);
         for num in numerators {
             numerator += num.as_bigint();
         }
-        numerator.to_f64().expect("not a f64")
-    } else {
-        let mut numerator = 0.0;
-        for num in numerators {
-            numerator += num.as_f64();
-        }
-        numerator
-    };
-
-    return (numerator, denominator);
+        return (SeriesSum::Large(numerator), denominator);
+    }
 }
 
 /// Given a list of numerators and denominators, compute the common denominator

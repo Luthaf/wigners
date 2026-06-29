@@ -50,11 +50,10 @@ wigners = ["_wigners.so"]
 testpaths = ["python/tests"]
 python_files = ["*.py"]
 
-### ======================================================================== ###
-
 [tool.tox]
 environments = []
 
 [tool.tox.env_run_base]
-deps = ["pytest", "numpy"]
+package = "wheel"
+deps = ["pytest", "sympy"]
 commands = [["pytest"]]
