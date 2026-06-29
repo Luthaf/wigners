@@ -5,3 +5,6 @@ mod rational;
 
 mod wigner_3j;
 pub use self::wigner_3j::{wigner_3j, clebsch_gordan, clear_wigner_3j_cache};
+
+mod wigner_d_matrix;
+pub use self::wigner_d_matrix::wigner_d_array;
