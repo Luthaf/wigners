@@ -1,22 +1,12 @@
 import os
-import sys
+import glob
 import subprocess
 
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
-from wheel.bdist_wheel import bdist_wheel
+from setuptools.command.bdist_wheel import bdist_wheel
 
 ROOT = os.path.realpath(os.path.dirname(__file__))
-
-if "--rust-target" in sys.argv:
-    index = sys.argv.index("--rust-target")
-    RUST_TARGET = sys.argv[index + 1]
-
-    # remove rust target from CLI args
-    sys.argv.pop(index)
-    sys.argv.pop(index)
-else:
-    RUST_TARGET = None
 
 
 class universal_wheel(bdist_wheel):
@@ -39,26 +29,38 @@ class cargo_ext(build_ext):
 
     def run(self):
         cargo_build = ["cargo", "build", "--release"]
-        target_dir = os.path.join(ROOT, "target")
 
-        if RUST_TARGET is not None:
-            cargo_build += ["--target", RUST_TARGET]
-            target_dir = os.path.join(target_dir, RUST_TARGET)
-
-        subprocess.run(cargo_build, cwd=ROOT, check=True)
+        subprocess.run(
+            cargo_build,
+            cwd=ROOT,
+            check=True,
+            env={"CARGO_TARGET_DIR": self.build_temp, **os.environ},
+        )
 
         file_found = False
         for filename in ["libwigners.so", "libwigners.dylib", "wigners.dll"]:
-            lib_path = os.path.join(target_dir, "release", filename)
-            if os.path.exists(lib_path):
+            lib_path = os.path.join(self.build_temp, "release", filename)
+
+            candidates = glob.glob(
+                # match either target/release or target/<triple>/release
+                os.path.join(self.build_temp, "**", "release", filename),
+                recursive=True,
+            )
+            if len(candidates) > 1:
+                raise ValueError(
+                    f"Found multiple candidates for {filename}: {candidates}"
+                )
+
+            if len(candidates) == 1:
+                lib_path = candidates[0]
                 file_found = True
-                print(f"found native library at {lib_path}")
                 self.copy_file(
                     lib_path, os.path.join(self.build_lib, "wigners", "_wigners.so")
                 )
+                break
 
         if not file_found:
-            raise Exception("failed to build native code")
+            raise Exception("could not find wigners library in " + self.build_temp)
 
 
 # read version from Cargo.toml
