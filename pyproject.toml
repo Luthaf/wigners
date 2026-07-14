@@ -31,7 +31,6 @@ repository = "https://github.com/Luthaf/wigners"
 [build-system]
 requires = [
     "setuptools >=77",
-    "wheel",
     "packaging",
 ]
 
