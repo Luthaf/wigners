@@ -57,6 +57,28 @@ def test_wigner_d_unitarity():
         )
 
 
+def test_wigner_d_rotation_product():
+    """The Wigner-D matrices represent the product of two rotations."""
+    max_j = 8
+    alpha = 0.3
+    beta_1 = 0.4
+    beta_2 = 0.9
+    gamma = -0.7
+
+    first = wigners.wigner_D_array(max_j, alpha, beta_1, 0.0)
+    second = wigners.wigner_D_array(max_j, 0.0, beta_2, gamma)
+    product = wigners.wigner_D_array(max_j, alpha, beta_1 + beta_2, gamma)
+
+    for j in range(max_j + 1):
+        np.testing.assert_allclose(
+            product[j],
+            first[j] @ second[j],
+            rtol=0.0,
+            atol=1e-12,
+            err_msg=f"j={j}",
+        )
+
+
 def test_wigner_d_beta_zero():
     """D(alpha, 0, gamma) should be diagonal: exp(-i*m*(alpha+gamma))."""
     alpha, gamma = 0.3, 0.7
@@ -88,6 +110,5 @@ def test_wigner_d_j0():
             0, random.random(), random.random(), random.random()
         )
         assert np.isclose(matrices[0], 1.0)
-
 
 
